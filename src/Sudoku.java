@@ -2,26 +2,43 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.SecureRandom;
 
+import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.border.MatteBorder;
 
 public class Sudoku {
 
 	private static final int N = 9;
+	
+	private JFrame frmMainFrame;
+	
 	private JPanel pnlNumberSelector;
 	private JPanel pnlPuzzle;
-	private JFrame frmMainFrame;
+	private JPanel pnlMain;
+	private JPanel pnlInfo;
+	private JPanel pnlButtonNavigation;
+	
+	
 	private JButton[] btnNumberSelectors = new JButton[9];
 	private JButton[] btnNumbers = new JButton[81];
 	private JButton btnSelection;	
+	
 	private ImageIcon[] buttonImages = new ImageIcon[10];
 	private ImageIcon[] buttonRolloverImages = new ImageIcon[10];
 	private ImageIcon[] buttonPressedImages = new ImageIcon[10];
@@ -37,25 +54,121 @@ public class Sudoku {
 
 	public Sudoku() throws IOException {
 		
-		frmMainFrame = new JFrame();
+		frmMainFrame = new JFrame("Sudoku");
+		frmMainFrame.setResizable(false);
 		frmMainFrame.setBounds(100, 100, 900, 600);
 		frmMainFrame.setLayout(null);
 		frmMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		BufferedImage backgroundImage = ImageIO.read(new File("./resources/BackgroundSmallLogo.png"));
+		frmMainFrame.setContentPane(new JLabel(new ImageIcon(backgroundImage)));
 		
 		pnlNumberSelector = createNumberSelector();
 		pnlNumberSelector.setVisible(false);
 		pnlPuzzle = createPuzzle();
+		pnlPuzzle.setVisible(false);
+		try {
+			pnlMain = createMainMenu();
+			pnlMain.setVisible(true);
+		} catch (UnsupportedAudioFileException e) {
+			e.printStackTrace();
+		}
+		pnlButtonNavigation = createButtonNavigation();
+		pnlButtonNavigation.setVisible(false);
+		
+		pnlInfo = createInfoPanel();
+		pnlInfo.setVisible(false);
+		
+		
 		
 		frmMainFrame.add(pnlNumberSelector);
 		frmMainFrame.add(pnlPuzzle);
+		frmMainFrame.add(pnlMain);
+		frmMainFrame.add(pnlInfo);
+		frmMainFrame.add(pnlButtonNavigation);
+		
 	
 		}
+	
+	private JPanel createButtonNavigation() {
+		
+		JPanel pnlButtonNavigation = new JPanel();
+		
+		JButton btnGoBack = new JButton("To Main");
+		btnGoBack.setBounds(75, 150, 100, 50);
+		btnGoBack.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				pnlPuzzle.setVisible(false);
+				pnlButtonNavigation.setVisible(false);
+				pnlMain.setVisible(true);
+				
+			}
+			
+		});
+		
+		
+		pnlButtonNavigation.setBackground(Color.WHITE);
+				
+		pnlButtonNavigation.setLayout(null);
+		pnlButtonNavigation.setBounds(0, 0, 200, 600);
+		
+		pnlButtonNavigation.add(btnGoBack);
+		
+		return pnlButtonNavigation;
+	}
+
+	private JPanel createInfoPanel()
+	{
+		String infoText = "<html><center><h1>Coding</h1><h3>Sang Tan Le</h3><h1>GUI</h1><h3>Daniel Waters</h3>"
+				+ "<h1>Music</h1><h3>longzijun<br>https://longzijun.wordpress.com/</center></html>";
+		
+		JPanel pnlInfo = new JPanel();
+		JButton btnReturn = new JButton("Return");
+		JTextPane txtCredits = new JTextPane();
+		txtCredits.setBounds(90, 150, 700, 350);
+		txtCredits.setContentType("text/html");
+		txtCredits.setText(infoText);
+		
+				
+		pnlInfo.setLayout(null);
+		pnlInfo.setBounds(0, 0, 900, 600);
+		
+		ImageIcon smallBackgroundIcon = new ImageIcon("./resources/BackgroundSmallLogo.png");
+		
+		JLabel background = new JLabel();
+		background.setIcon(smallBackgroundIcon);
+		background.setBounds(0, 0, 900, 600);
+		
+				
+		ImageIcon returnImage = new ImageIcon("./resources/Return.png");
+		
+		
+		btnReturn.setBounds(410, 500, 60, 60);
+		btnReturn.setIcon(returnImage);
+		
+		btnReturn.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pnlInfo.setVisible(false);
+				pnlMain.setVisible(true);
+			}
+		});
+		
+		pnlInfo.add(btnReturn);		
+		pnlInfo.add(txtCredits);
+		pnlInfo.add(background);
+		
+		return pnlInfo;
+		
+	}
 	
 	private JPanel createNumberSelector()
 	{
 		JPanel pnlNumberSelector = new JPanel();
 		pnlNumberSelector.setLayout(new GridLayout(3,3));
-		pnlNumberSelector.setBounds(700, 250, 125, 125);
+		pnlNumberSelector.setBounds(700, 240, 125, 125);
 		
 		String btnLabels[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
 				
@@ -70,12 +183,104 @@ public class Sudoku {
 		return pnlNumberSelector;
 	}
 	
+	private JPanel createMainMenu() throws UnsupportedAudioFileException 
+	{
+
+		
+        try {
+        	AudioInputStream audioBackgroundStream = AudioSystem.getAudioInputStream(new File("./resources/backgroundMusic.wav"));			
+    		Clip clipBackgroundMusic = AudioSystem.getClip( );
+			clipBackgroundMusic.open(audioBackgroundStream);
+	        clipBackgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+	        clipBackgroundMusic.start( );
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		ImageIcon backgroundIcon = new ImageIcon("./resources/MainBackground.png");
+
+		
+		JLabel background = new JLabel();
+		background.setIcon(backgroundIcon);
+		background.setBounds(0, 0, 900, 600);
+		
+        
+        
+		JPanel pnlMain = new JPanel();
+		pnlMain.setLayout(null);
+		pnlMain.setBounds(0, 0, 900, 600);
+		
+		
+		
+		
+		
+		JButton btnCreatePuzzle = new JButton("Create Puzzle");
+		JButton btnPlayPuzzle = new JButton("Play Puzzle");
+		
+		
+		JButton btnInfoSelect = new JButton("Info");
+		ImageIcon infoImage = new ImageIcon("./resources/Info.png");
+		btnInfoSelect.setIcon(infoImage);
+		
+		
+
+	
+		btnCreatePuzzle.setBounds(350, 325, 150, 40);
+		btnPlayPuzzle.setBounds(350, 400, 150, 40);
+		btnInfoSelect.setBounds(600, 500, 33, 35);
+		btnInfoSelect.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pnlMain.setVisible(false);
+				pnlInfo.setVisible(true);
+			}
+		});
+		
+		btnPlayPuzzle.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pnlMain.setVisible(false);
+				pnlButtonNavigation.setVisible(true);
+				try {
+					frmMainFrame.remove(pnlPuzzle);
+					pnlPuzzle = createPuzzle();
+					frmMainFrame.add(pnlPuzzle);
+					pnlPuzzle.setVisible(true);
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+
+			}
+		});
+		
+			
+		
+
+			
+		
+		pnlMain.add(btnCreatePuzzle);
+		pnlMain.add(btnPlayPuzzle);
+		pnlMain.add(btnInfoSelect);
+		pnlMain.add(background);
+
+		
+				
+		
+	
+		return pnlMain;
+		
+	}
+	
+	
 	private JPanel createPuzzle() throws IOException 
 	{
-		// String btnLabels[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+			
 		JPanel pnlPuzzle = new JPanel();
-				pnlPuzzle.setLayout(new GridLayout(9,9));
-		pnlPuzzle.setBounds(200, 100, 400, 400);
+		pnlPuzzle.setLayout(new GridLayout(9,9));
+		pnlPuzzle.setBounds(230, 100, 400, 400);
 		
 		puzzle = readFile();
 		
@@ -100,7 +305,7 @@ public class Sudoku {
 				
 			}
 		}
-		
+	
 	
 		return pnlPuzzle;
 		
