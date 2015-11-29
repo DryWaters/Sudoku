@@ -10,11 +10,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.security.SecureRandom;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
@@ -34,7 +33,6 @@ import javax.swing.border.MatteBorder;
 public class Sudoku {
 
 	private static final int N = 9;
-	private SecureRandom randomizer = new SecureRandom();
 	
 	
 	private JFrame frmMainFrame;
@@ -64,7 +62,7 @@ public class Sudoku {
 	private int selectedColumn;
 	
 	private boolean isNewPuzzle = false;
-	
+	private boolean puzzleDone = false;
 	
 	public static void main(String[] args) throws IOException {
 		Sudoku window = new Sudoku();
@@ -183,8 +181,19 @@ public class Sudoku {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				
+
+				
 				try {
-					writeUserPuzzle();
+					if(puzzleDone)
+					{
+						writeBlankPuzzle();
+						puzzle=readFile(1);
+						checkDisabledLocations();						
+						isNewPuzzle=false;
+					}
+					else
+						writeUserPuzzle();
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -193,10 +202,11 @@ public class Sudoku {
 				pnlPuzzle.setVisible(false);
 				pnlButtonNavigation.setVisible(false);
 				pnlNumberSelector.setVisible(false);
+
 				pnlMain.setVisible(true);
 				
 			}
-			
+
 		});
 		
 		
@@ -339,16 +349,17 @@ public class Sudoku {
 					if (pnlPuzzle!= null)
 					{
 						frmMainFrame.remove(pnlPuzzle);
+
 					}	
 					
 					try {
 						checkFile();
+						
 
 						pnlPuzzle = createPuzzle();
 						frmMainFrame.add(pnlPuzzle);
 						pnlPuzzle.setVisible(true);
-						frmMainFrame.setVisible(false);
-						frmMainFrame.setVisible(true);
+						frmMainFrame.revalidate();
 						isNewPuzzle = true;
 						
 					} catch (IOException e1) {
@@ -375,17 +386,19 @@ public class Sudoku {
 				if (pnlPuzzle!= null)
 				{
 					frmMainFrame.remove(pnlPuzzle);
+					
 				}	
 				
 				try {
+					
 					puzzle = readFile(1);
 					checkDisabledLocations();
 					pnlPuzzle = createPuzzle();
 					frmMainFrame.add(pnlPuzzle);
 					pnlPuzzle.setVisible(true);
-					frmMainFrame.setVisible(false);
-					frmMainFrame.setVisible(true);
+					frmMainFrame.revalidate();
 					isNewPuzzle = false;
+					puzzleDone = false;
 						
 				} catch (IOException e1) {
 					
@@ -634,7 +647,12 @@ public class Sudoku {
 						btnSelection.setText(e.getActionCommand());
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
 						if(isDone())
+						{
 							victoryDance();
+							btnSelection = null;
+							
+						}
+							
 						else
 						{
 							btnSelection.setRolloverEnabled(true);
@@ -843,7 +861,6 @@ public class Sudoku {
 		Integer[] victoryNumbers = {10, 12, 15, 19, 21, 23, 25, 28, 30, 32, 34, 38, 41, 42, 43, 47, 50, 52, 56, 59, 61};
 		ArrayList<Integer> victoryList = new ArrayList<Integer>(Arrays.asList(victoryNumbers));
 		
-		
 		for (int i = 0; i < 81; i++)
 		{
 
@@ -856,7 +873,9 @@ public class Sudoku {
 			
 		}
 
+		puzzleDone = true;
 	}
+		
 }
 
 
