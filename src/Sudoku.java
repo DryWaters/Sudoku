@@ -342,7 +342,7 @@ public class Sudoku {
 						pnlPuzzle.setVisible(true);
 						frmMainFrame.setVisible(false);
 						frmMainFrame.setVisible(true);
-						isNewPuzzle = false;
+						isNewPuzzle = true;
 						
 					} catch (IOException e1) {
 					
@@ -378,7 +378,7 @@ public class Sudoku {
 					pnlPuzzle.setVisible(true);
 					frmMainFrame.setVisible(false);
 					frmMainFrame.setVisible(true);
-					isNewPuzzle = true;
+					isNewPuzzle = false;
 						
 				} catch (IOException e1) {
 					
@@ -415,7 +415,7 @@ public class Sudoku {
 		int choice;
 		File tempFile = new File("editedPuzzle.txt");
 		
-		if(tempFile.exists()&&(!isNewPuzzle))
+		if(tempFile.exists()&&(isNewPuzzle))
 		{
 			choice = JOptionPane.showConfirmDialog(null,  "Would you like to load previous changes?", "Load", JOptionPane.YES_NO_OPTION);
 			puzzle = readFile(choice);
@@ -626,6 +626,8 @@ public class Sudoku {
 						btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+						if(isDone())
+							victoryDance();
 					} 
 					else
 					{
@@ -635,7 +637,8 @@ public class Sudoku {
 						btnSelection.setText(e.getActionCommand());
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
 					}
-										
+						
+					
 					btnSelection.setRolloverEnabled(true);
 					btnSelection.setEnabled(false);
 					btnSelection.setEnabled(true);
@@ -807,6 +810,23 @@ public class Sudoku {
 		
 		return true;
 	}
+	
+	private boolean isDone() {
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++)
+				if(puzzle[i][j]==0)
+					return false;
+		
+		return true;
+		
+	}
+	
+
+	private void victoryDance() {
+		System.out.println("Done!");
+		
+	}
+	
 }
 
 
