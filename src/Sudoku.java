@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,6 +47,7 @@ public class Sudoku {
 	private ImageIcon[] buttonRolloverImages = new ImageIcon[10];
 	private ImageIcon[] buttonPressedImages = new ImageIcon[10];
 	private ImageIcon[] buttonDisabledImages = new ImageIcon[10];
+	private ImageIcon[] buttonErrorImages = new ImageIcon[10];
 	
 	private int[][] puzzle = new int[9][9];
 	private int[][] blankPuzzle = new int[9][9];
@@ -288,8 +289,8 @@ public class Sudoku {
 		
 
 	
-		btnCreatePuzzle.setBounds(350, 325, 150, 40);
-		btnPlayPuzzle.setBounds(350, 400, 150, 40);
+		btnCreatePuzzle.setBounds(375, 325, 150, 40);
+		btnPlayPuzzle.setBounds(375, 400, 150, 40);
 		btnInfoSelect.setBounds(600, 500, 33, 35);
 		btnInfoSelect.addActionListener(new ActionListener() {
 			@Override
@@ -312,8 +313,7 @@ public class Sudoku {
 					
 					try {
 						checkFile();
-						for (int i = 0; i< 81; i++)
-							System.out.println(disabledLocations[i]);
+
 						pnlPuzzle = createPuzzle();
 						frmMainFrame.add(pnlPuzzle);
 						pnlPuzzle.setVisible(true);
@@ -510,33 +510,42 @@ public class Sudoku {
 		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
 				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
 				 "./resources/Button7.png", "./resources/Button8.png", "./resources/Button9.png"};
-			for (int i = 0; i < buttonImageList.length; i++)
-				buttonImages[i] = new ImageIcon(buttonImageList[i]);
+		for (int i = 0; i < buttonImageList.length; i++)
+			buttonImages[i] = new ImageIcon(buttonImageList[i]);
 		
-			final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
+		final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
 				"./resources/Button4Rollover.png", "./resources/Button5Rollover.png", "./resources/Button6Rollover.png", "./resources/Button7Rollover.png",
 				"./resources/Button8Rollover.png", "./resources/Button9Rollover.png"};
-			for (int i = 0; i < buttonRolloverImageList.length; i++)
-				buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
+		for (int i = 0; i < buttonRolloverImageList.length; i++)
+			buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
 		
-			final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
-				"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
-				"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
-			for (int i = 0; i < buttonPressedImageList.length; i++)
-				buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
+		final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
+			"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
+			"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
+		for (int i = 0; i < buttonPressedImageList.length; i++)
+			buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
 		
-			final String[] puzzleBorders = 
-				{"0,0,0,0", "5,5,1,1", "5,1,1,1", "5,1,1,5", "1,5,1,1", "1,1,1,1", 
-					"1,1,1,5", "1,5,5,1", "1,1,5,1", "1,1,5,5" 	
-					};
+		final String[] buttonErrorImageList = {"./resources/Button0Error.png", "./resources/Button1Error.png", "./resources/Button2Error.png", "./resources/Button3Error.png",
+				"./resources/Button4Error.png", "./resources/Button5Error.png", "./resources/Button6Error.png", "./resources/Button7Error.png",
+				"./resources/Button8Error.png", "./resources/Button9Error.png"};
+			for (int i = 0; i < buttonErrorImageList.length; i++)
+				buttonErrorImages[i] = new ImageIcon(buttonErrorImageList[i]);
+		
+		
+		
+		
+		final String[] puzzleBorders = 
+			{"0,0,0,0", "5,5,1,1", "5,1,1,1", "5,1,1,5", "1,5,1,1", "1,1,1,1", 
+				"1,1,1,5", "1,5,5,1", "1,1,5,1", "1,1,5,5" 	
+			};
 			
 			
-			String[] border = puzzleBorders[value].split(",");
-			button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
-					Integer.parseInt(border[1]), Integer.parseInt(border[2]), 
-					Integer.parseInt(border[3]), Color.BLACK));
+		String[] border = puzzleBorders[value].split(",");
+		button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
+				Integer.parseInt(border[1]), Integer.parseInt(border[2]), 
+				Integer.parseInt(border[3]), Color.BLACK));
 			
-			
+		
 			
 		button.setIcon(buttonImages[value%10]);
 		button.setRolloverIcon(buttonRolloverImages[value%10]);
@@ -562,12 +571,24 @@ public class Sudoku {
 				if(e.getSource()== btnNumberSelectors[i]) 
 				{
 					pnlNumberSelector.setVisible(false);
-					btnSelection.setRolloverIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
-					btnSelection.setIcon(buttonImages[Integer.parseInt(e.getActionCommand())]);
-					btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
-					btnSelection.setText(e.getActionCommand());
-					puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
-				
+					
+					if (isValid(Integer.parseInt(e.getActionCommand()), selectedRow, selectedColumn))
+					{
+						btnSelection.setRolloverIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setIcon(buttonImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setText(e.getActionCommand());
+						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+					} 
+					else
+					{
+						btnSelection.setRolloverIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setPressedIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
+						btnSelection.setText(e.getActionCommand());
+						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+					}
+										
 					btnSelection.setRolloverEnabled(true);
 					btnSelection.setEnabled(false);
 					btnSelection.setEnabled(true);
@@ -575,6 +596,7 @@ public class Sudoku {
 				}
 			}		
 		}
+
 	}
 	
 	public class CheckButton implements ActionListener
@@ -711,7 +733,32 @@ public class Sudoku {
 					
 				counter++;
 			}		
+		
+		reader.close();
     }
+    
+	private boolean isValid(int number, int row, int column) {
+
+		//Check row 
+		for (int i = 0; i<9; i++)
+			if (puzzle[i][column] == number)
+				return false;
+
+		//Check column
+		for (int i = 0; i<9; i++)
+			if (puzzle[row][i] == number)
+				return false;
+
+		//Check small block 3x3
+		int tmpX = row % 3; 
+		int tmpY = column % 3;
+		for (int k = row - tmpX; k <= row - tmpX + 2; k++)
+			for (int t = column - tmpY; t <= column - tmpY + 2; t++)
+				if (puzzle[k][t] == number)
+					return false;
+		
+		return true;
+	}
 }
 
 
