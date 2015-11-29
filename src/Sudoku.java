@@ -10,6 +10,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
@@ -29,6 +34,8 @@ import javax.swing.border.MatteBorder;
 public class Sudoku {
 
 	private static final int N = 9;
+	private SecureRandom randomizer = new SecureRandom();
+	
 	
 	private JFrame frmMainFrame;
 	
@@ -628,6 +635,14 @@ public class Sudoku {
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
 						if(isDone())
 							victoryDance();
+						else
+						{
+							btnSelection.setRolloverEnabled(true);
+							btnSelection.setEnabled(false);
+							btnSelection.setEnabled(true);
+							btnSelection = null;
+						}
+						
 					} 
 					else
 					{
@@ -636,13 +651,14 @@ public class Sudoku {
 						btnSelection.setPressedIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+						btnSelection.setRolloverEnabled(true);
+						btnSelection.setEnabled(false);
+						btnSelection.setEnabled(true);
+						btnSelection = null;
 					}
 						
 					
-					btnSelection.setRolloverEnabled(true);
-					btnSelection.setEnabled(false);
-					btnSelection.setEnabled(true);
-					btnSelection = null;
+					
 				}
 			}		
 		}
@@ -822,11 +838,25 @@ public class Sudoku {
 	}
 	
 
-	private void victoryDance() {
-		System.out.println("Done!");
+	private void victoryDance()  {
 		
+		Integer[] victoryNumbers = {10, 12, 15, 19, 21, 23, 25, 28, 30, 32, 34, 38, 41, 42, 43, 47, 50, 52, 56, 59, 61};
+		ArrayList<Integer> victoryList = new ArrayList<Integer>(Arrays.asList(victoryNumbers));
+		
+		
+		for (int i = 0; i < 81; i++)
+		{
+
+			if (victoryList.contains(i))
+				btnNumbers[i].setDisabledIcon(buttonErrorImages[1]);
+			else
+				btnNumbers[i].setDisabledIcon(buttonImages[0]);
+			
+			btnNumbers[i].setEnabled(false);
+			
+		}
+
 	}
-	
 }
 
 
