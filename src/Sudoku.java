@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
@@ -18,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.border.MatteBorder;
@@ -45,11 +48,14 @@ public class Sudoku {
 	private ImageIcon[] buttonDisabledImages = new ImageIcon[10];
 	
 	private int[][] puzzle = new int[9][9];
+	private int[] disabledLocations = new int[81];
+	private int selectedRow;
+	private int selectedColumn;
 	
 	
 	public static void main(String[] args) throws IOException {
 		Sudoku window = new Sudoku();
-		window.frmMainFrame.setVisible(true);
+		window.frmMainFrame.setVisible(true);		
 	}
 
 	public Sudoku() throws IOException {
@@ -64,8 +70,7 @@ public class Sudoku {
 		
 		pnlNumberSelector = createNumberSelector();
 		pnlNumberSelector.setVisible(false);
-		pnlPuzzle = createPuzzle();
-		pnlPuzzle.setVisible(false);
+
 		try {
 			pnlMain = createMainMenu();
 			pnlMain.setVisible(true);
@@ -81,7 +86,7 @@ public class Sudoku {
 		
 		
 		frmMainFrame.add(pnlNumberSelector);
-		frmMainFrame.add(pnlPuzzle);
+		
 		frmMainFrame.add(pnlMain);
 		frmMainFrame.add(pnlInfo);
 		frmMainFrame.add(pnlButtonNavigation);
@@ -99,8 +104,16 @@ public class Sudoku {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				try {
+					writeUserPuzzle();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				pnlPuzzle.setVisible(false);
 				pnlButtonNavigation.setVisible(false);
+				pnlNumberSelector.setVisible(false);
 				pnlMain.setVisible(true);
 				
 			}
@@ -243,15 +256,27 @@ public class Sudoku {
 			public void actionPerformed(ActionEvent e) {
 				pnlMain.setVisible(false);
 				pnlButtonNavigation.setVisible(true);
-				try {
-					frmMainFrame.remove(pnlPuzzle);
-					pnlPuzzle = createPuzzle();
-					frmMainFrame.add(pnlPuzzle);
-					pnlPuzzle.setVisible(true);
+				
+					if (pnlPuzzle!= null)
+					{
+						frmMainFrame.remove(pnlPuzzle);
+					}	
 					
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+					try {
+						checkFile();
+						pnlPuzzle = createPuzzle();
+						frmMainFrame.add(pnlPuzzle);
+						pnlPuzzle.setVisible(true);
+						frmMainFrame.setVisible(false);
+						frmMainFrame.setVisible(true);
+						
+					} catch (IOException e1) {
+					
+						e1.printStackTrace();
+					
+					}
+
+					
 
 			}
 		});
@@ -274,15 +299,30 @@ public class Sudoku {
 		
 	}
 	
+
+	private void checkFile() throws IOException
+	{
+		int choice;
+		File tempFile = new File("editedPuzzle.txt");
+		
+		if(tempFile.exists())
+		{
+			choice = JOptionPane.showConfirmDialog(null,  "Would you like to load previous changes?", "Load", JOptionPane.YES_NO_OPTION);
+			puzzle = readFile(choice);
+		}
+		else
+			puzzle = readFile(1);
+		
+	}
+	
 	
 	private JPanel createPuzzle() throws IOException 
 	{
 			
+		
 		JPanel pnlPuzzle = new JPanel();
 		pnlPuzzle.setLayout(new GridLayout(9,9));
 		pnlPuzzle.setBounds(230, 100, 400, 400);
-		
-		puzzle = readFile();
 		
 		String temp = "";
 		
@@ -295,8 +335,9 @@ public class Sudoku {
 			{
 				btnNumbers[counter] = new JButton(temp+puzzle[i][j]);
 				btnNumbers[counter].addActionListener(new CheckButton());
-				if (!btnNumbers[counter].getText().equalsIgnoreCase("0"))
+				if (disabledLocations[counter]!=1)
 				{
+					
 					btnNumbers[counter].setEnabled(false);
 				}
 				setButton(btnNumbers[counter], puzzle[i][j], counter);
@@ -305,7 +346,6 @@ public class Sudoku {
 				
 			}
 		}
-	
 	
 		return pnlPuzzle;
 		
@@ -438,7 +478,8 @@ public class Sudoku {
 					btnSelection.setIcon(buttonImages[Integer.parseInt(e.getActionCommand())]);
 					btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
 					btnSelection.setText(e.getActionCommand());
-					
+					puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+				
 					btnSelection.setRolloverEnabled(true);
 					btnSelection.setEnabled(false);
 					btnSelection.setEnabled(true);
@@ -458,14 +499,28 @@ public class Sudoku {
 				btnSelection = (JButton) e.getSource();
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
+				
+				for (int i = 0; i < btnNumbers.length; i++)
+					if (btnSelection==btnNumbers[i])
+					{
+						selectedRow = i/9;
+						selectedColumn = i%9;
+					}
+				
 			}			
 			
 		}
 	}
 	
-	public static int[][] readFile() throws IOException 
+	private int[][] readFile(int choice) throws IOException 
 	{
-		FileReader file = new FileReader("puzzle.txt");
+		FileReader file;
+				
+		if (choice == 0)
+			file = new FileReader("editedPuzzle.txt");
+		else
+			file = new FileReader("puzzle.txt");
+		
 		BufferedReader reader = new BufferedReader(file);
 		
 		int[][] table = new int[11][11];
@@ -485,10 +540,51 @@ public class Sudoku {
 			}		
 			
 		file.close();
+		
+		file = new FileReader("puzzle.txt");
+		
+		reader = new BufferedReader(file);
+		
+		for (int row = 0; row < N; row++)
+		{
+			line[row] = reader.readLine();
+		}
+		
+		int counter = 0;
+		for (int row = 0; row < N;row++)
+			for (int col = 0; col < N; col++)
+			{
+				
+				parts = line[row].split(",");
+				if (table[row][col] == 0)
+					disabledLocations[counter] = 1;
+				counter++;
+			}		
 			
+		
+		
+		file.close();
+		
+		
+		
 		return (table);
 
 	}
+	
+    public void writeUserPuzzle() throws IOException, UnsupportedEncodingException
+    {
+    	PrintWriter writer = new PrintWriter("editedPuzzle.txt", "UTF-8");
+    				
+    	for(int row = 0; row<N; ++row)
+    	{
+    		for(int col = 0; col<N; ++col)
+    			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
+    			writer.println();	
+    	}
+    		
+    	writer.close();
+    }
+
 	
 	
 }
