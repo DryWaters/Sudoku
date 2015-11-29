@@ -38,6 +38,7 @@ public class Sudoku {
 	private JPanel pnlInfo;
 	private JPanel pnlPlayButtonNavigation;
 	private JPanel pnlCreateButtonNavigation;
+	private JPanel pnlClear;
 	
 	private JButton[] btnNumberSelectors = new JButton[9];
 	private JButton[] btnNumbers = new JButton[81];
@@ -91,7 +92,9 @@ public class Sudoku {
 		pnlPlayButtonNavigation.setVisible(false);
 		pnlCreateButtonNavigation = createButtonNavigation();
 		pnlCreateButtonNavigation.setVisible(false);
-		
+		pnlClear = createClearPanel();
+		pnlClear.setVisible(false);
+				
 		pnlInfo = createInfoPanel();
 		pnlInfo.setVisible(false);
 		
@@ -102,8 +105,25 @@ public class Sudoku {
 		frmMainFrame.add(pnlInfo);
 		frmMainFrame.add(pnlPlayButtonNavigation);
 		frmMainFrame.add(pnlCreateButtonNavigation);
+		frmMainFrame.add(pnlClear);
 	}
 	
+	private JPanel createClearPanel() {
+	
+		JPanel pnlClearButton = new JPanel();
+		JButton btnClearButton = new JButton("Clear");
+						
+		pnlClearButton.setLayout(null);
+		pnlClearButton.setBounds(725, 375, 75, 30);
+		btnClearButton.setBounds(0,0,75,30);
+		btnClearButton.addActionListener(new ClearSelection());
+		
+		
+		pnlClearButton.add(btnClearButton);
+		
+		return pnlClearButton;
+	}
+
 	private JPanel createButtonNavigation() {
 		
 		JPanel pnlCreateButtonNavigation = new JPanel();
@@ -232,6 +252,8 @@ public class Sudoku {
 	private JPanel createNumberSelector()
 	{
 		JPanel pnlNumberSelector = new JPanel();
+
+			
 		pnlNumberSelector.setLayout(new GridLayout(3,3));
 		pnlNumberSelector.setBounds(700, 240, 125, 125);
 		
@@ -244,6 +266,7 @@ public class Sudoku {
 			setButton(btnNumberSelectors[i], i + 1);
 			pnlNumberSelector.add(btnNumberSelectors[i]);
 		}
+			
 		
 		return pnlNumberSelector;
 	}
@@ -558,6 +581,29 @@ public class Sudoku {
 		return button;
 	}
 	
+	public class ClearSelection implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			pnlNumberSelector.setVisible(false);
+			pnlClear.setVisible(false);
+					
+			btnSelection.setRolloverIcon(buttonRolloverImages[0]);
+			btnSelection.setIcon(buttonImages[0]);
+			btnSelection.setPressedIcon(buttonPressedImages[0]);
+			btnSelection.setText("0");
+			puzzle[selectedRow][selectedColumn]=0;
+
+								
+			btnSelection.setRolloverEnabled(true);
+			btnSelection.setEnabled(false);
+			btnSelection.setEnabled(true);
+			btnSelection = null;
+		
+		}		
+	}
+
 	
 	
 	
@@ -571,6 +617,7 @@ public class Sudoku {
 				if(e.getSource()== btnNumberSelectors[i]) 
 				{
 					pnlNumberSelector.setVisible(false);
+					pnlClear.setVisible(false);
 					
 					if (isValid(Integer.parseInt(e.getActionCommand()), selectedRow, selectedColumn))
 					{
@@ -609,6 +656,7 @@ public class Sudoku {
 				btnSelection = (JButton) e.getSource();
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
+				pnlClear.setVisible(true);
 				
 				for (int i = 0; i < btnNumbers.length; i++)
 					if (btnSelection==btnNumbers[i])
