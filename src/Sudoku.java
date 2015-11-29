@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,8 +36,8 @@ public class Sudoku {
 	private JPanel pnlPuzzle;
 	private JPanel pnlMain;
 	private JPanel pnlInfo;
-	private JPanel pnlButtonNavigation;
-	
+	private JPanel pnlPlayButtonNavigation;
+	private JPanel pnlCreateButtonNavigation;
 	
 	private JButton[] btnNumberSelectors = new JButton[9];
 	private JButton[] btnNumbers = new JButton[81];
@@ -48,9 +49,12 @@ public class Sudoku {
 	private ImageIcon[] buttonDisabledImages = new ImageIcon[10];
 	
 	private int[][] puzzle = new int[9][9];
+	private int[][] blankPuzzle = new int[9][9];
 	private int[] disabledLocations = new int[81];
 	private int selectedRow;
 	private int selectedColumn;
+	
+	private boolean isNewPuzzle = false;
 	
 	
 	public static void main(String[] args) throws IOException {
@@ -59,6 +63,11 @@ public class Sudoku {
 	}
 
 	public Sudoku() throws IOException {
+		
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++)
+				blankPuzzle[i][j]=0;
+		
 		
 		frmMainFrame = new JFrame("Sudoku");
 		frmMainFrame.setResizable(false);
@@ -77,24 +86,66 @@ public class Sudoku {
 		} catch (UnsupportedAudioFileException e) {
 			e.printStackTrace();
 		}
-		pnlButtonNavigation = createButtonNavigation();
-		pnlButtonNavigation.setVisible(false);
+		pnlPlayButtonNavigation = createPlayButtonNavigation();
+		pnlPlayButtonNavigation.setVisible(false);
+		pnlCreateButtonNavigation = createButtonNavigation();
+		pnlCreateButtonNavigation.setVisible(false);
 		
 		pnlInfo = createInfoPanel();
 		pnlInfo.setVisible(false);
 		
 		
 		
-		frmMainFrame.add(pnlNumberSelector);
-		
+		frmMainFrame.add(pnlNumberSelector);	
 		frmMainFrame.add(pnlMain);
 		frmMainFrame.add(pnlInfo);
-		frmMainFrame.add(pnlButtonNavigation);
-		
-	
-		}
+		frmMainFrame.add(pnlPlayButtonNavigation);
+		frmMainFrame.add(pnlCreateButtonNavigation);
+	}
 	
 	private JPanel createButtonNavigation() {
+		
+		JPanel pnlCreateButtonNavigation = new JPanel();
+		
+		JButton btnGoBack = new JButton("To Main");
+		btnGoBack.setBounds(75, 150, 100, 50);
+		btnGoBack.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					writePuzzle();
+					puzzle=readFile(1);
+					checkDisabledLocations();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+
+				pnlPuzzle.setVisible(false);
+				pnlCreateButtonNavigation.setVisible(false);
+				pnlNumberSelector.setVisible(false);
+				pnlMain.setVisible(true);
+				
+			}
+			
+		});
+		
+		
+		pnlCreateButtonNavigation.setBackground(Color.WHITE);
+				
+		pnlCreateButtonNavigation.setLayout(null);
+		pnlCreateButtonNavigation.setBounds(0, 0, 200, 600);
+		
+		pnlCreateButtonNavigation.add(btnGoBack);
+		
+		return pnlCreateButtonNavigation;
+	}
+	
+	
+	private JPanel createPlayButtonNavigation() {
 		
 		JPanel pnlButtonNavigation = new JPanel();
 		
@@ -218,17 +269,14 @@ public class Sudoku {
 		JLabel background = new JLabel();
 		background.setIcon(backgroundIcon);
 		background.setBounds(0, 0, 900, 600);
-		
-        
+		       
         
 		JPanel pnlMain = new JPanel();
 		pnlMain.setLayout(null);
 		pnlMain.setBounds(0, 0, 900, 600);
 		
 		
-		
-		
-		
+				
 		JButton btnCreatePuzzle = new JButton("Create Puzzle");
 		JButton btnPlayPuzzle = new JButton("Play Puzzle");
 		
@@ -255,7 +303,7 @@ public class Sudoku {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				pnlMain.setVisible(false);
-				pnlButtonNavigation.setVisible(true);
+				pnlPlayButtonNavigation.setVisible(true);
 				
 					if (pnlPuzzle!= null)
 					{
@@ -264,11 +312,14 @@ public class Sudoku {
 					
 					try {
 						checkFile();
+						for (int i = 0; i< 81; i++)
+							System.out.println(disabledLocations[i]);
 						pnlPuzzle = createPuzzle();
 						frmMainFrame.add(pnlPuzzle);
 						pnlPuzzle.setVisible(true);
 						frmMainFrame.setVisible(false);
 						frmMainFrame.setVisible(true);
+						isNewPuzzle = false;
 						
 					} catch (IOException e1) {
 					
@@ -281,7 +332,43 @@ public class Sudoku {
 			}
 		});
 		
-			
+		btnCreatePuzzle.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pnlMain.setVisible(false);
+				pnlCreateButtonNavigation.setVisible(true);
+				try {
+					writeBlankPuzzle();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+				if (pnlPuzzle!= null)
+				{
+					frmMainFrame.remove(pnlPuzzle);
+				}	
+				
+				try {
+					puzzle = readFile(1);
+					checkDisabledLocations();
+					pnlPuzzle = createPuzzle();
+					frmMainFrame.add(pnlPuzzle);
+					pnlPuzzle.setVisible(true);
+					frmMainFrame.setVisible(false);
+					frmMainFrame.setVisible(true);
+					isNewPuzzle = true;
+						
+				} catch (IOException e1) {
+					
+						e1.printStackTrace();
+					
+					}
+
+					
+
+			}
+		});	
+		
+		
 		
 
 			
@@ -305,13 +392,15 @@ public class Sudoku {
 		int choice;
 		File tempFile = new File("editedPuzzle.txt");
 		
-		if(tempFile.exists())
+		if(tempFile.exists()&&(!isNewPuzzle))
 		{
 			choice = JOptionPane.showConfirmDialog(null,  "Would you like to load previous changes?", "Load", JOptionPane.YES_NO_OPTION);
 			puzzle = readFile(choice);
 		}
 		else
 			puzzle = readFile(1);
+		
+		checkDisabledLocations();
 		
 	}
 	
@@ -337,7 +426,6 @@ public class Sudoku {
 				btnNumbers[counter].addActionListener(new CheckButton());
 				if (disabledLocations[counter]!=1)
 				{
-					
 					btnNumbers[counter].setEnabled(false);
 				}
 				setButton(btnNumbers[counter], puzzle[i][j], counter);
@@ -527,13 +615,13 @@ public class Sudoku {
 		String[] parts = new String[11];
 		String[] line = new String[11];
 			
-		for (int row = 0; row < N; row++)
+		for (int row = 0; row < 9; row++)
 		{
 			line[row] = reader.readLine();
 		}
 		
-		for (int row = 0; row < N;row++)
-			for (int col = 0; col < N; col++)
+		for (int row = 0; row < 9;row++)
+			for (int col = 0; col < 9; col++)
 			{
 				parts = line[row].split(",");
 				table[row][col] = Integer.parseInt(parts[col]);
@@ -541,52 +629,89 @@ public class Sudoku {
 			
 		file.close();
 		
-		file = new FileReader("puzzle.txt");
-		
-		reader = new BufferedReader(file);
-		
-		for (int row = 0; row < N; row++)
-		{
-			line[row] = reader.readLine();
-		}
-		
-		int counter = 0;
-		for (int row = 0; row < N;row++)
-			for (int col = 0; col < N; col++)
-			{
-				
-				parts = line[row].split(",");
-				if (table[row][col] == 0)
-					disabledLocations[counter] = 1;
-				counter++;
-			}		
-			
-		
-		
-		file.close();
-		
-		
-		
 		return (table);
 
 	}
 	
-    public void writeUserPuzzle() throws IOException, UnsupportedEncodingException
+    private void writeUserPuzzle() throws IOException, UnsupportedEncodingException
     {
     	PrintWriter writer = new PrintWriter("editedPuzzle.txt", "UTF-8");
     				
-    	for(int row = 0; row<N; ++row)
+    	for(int row = 0; row<9; ++row)
     	{
-    		for(int col = 0; col<N; ++col)
+    		for(int col = 0; col<9; ++col)
     			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
     			writer.println();	
     	}
     		
     	writer.close();
     }
+    
+    private void writePuzzle() throws IOException, UnsupportedEncodingException
+    {
+    	PrintWriter writer = new PrintWriter("puzzle.txt", "UTF-8");
+    				
+    	for(int row = 0; row<9; ++row)
+    	{
+    		for(int col = 0; col<9; ++col)
+    			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
+    			writer.println();	
+    	}
+    		
+    	writer.close();
+    }
+    
+    
+    private void writeBlankPuzzle() throws IOException, UnsupportedEncodingException
+    {
+    	PrintWriter writer = new PrintWriter("puzzle.txt", "UTF-8");
+    				
+    	for(int row = 0; row<9; ++row)
+    	{
+    		for(int col = 0; col<9; ++col)
+    			writer.print( (col == 8 ? blankPuzzle[row][col] : blankPuzzle[row][col] + ",") );
+    			writer.println();	
+    	}
+    		
+    	writer.close();
+    }
+    
+    private void checkDisabledLocations() throws IOException
+    {
+    	FileReader file = new FileReader("puzzle.txt");
+		
+		BufferedReader reader = new BufferedReader(file);
+		
+		int[][] table = new int[11][11];
+		String[] parts = new String[11];
+		String[] line = new String[11];
+			
+		for (int row = 0; row < 9; row++)
+		{
+			line[row] = reader.readLine();
+		}
+		
+		for (int row = 0; row < 9;row++)
+			for (int col = 0; col < 9; col++)
+			{
+				parts = line[row].split(",");
+				table[row][col] = Integer.parseInt(parts[col]);
+			}		
+			
 
-	
-	
+    	
+		int counter = 0;
+		for (int row = 0; row < 9;row++)
+			for (int col = 0; col < 9; col++)
+			{
+				if (table[row][col] == 0)
+					disabledLocations[counter] = 1;
+				else
+					disabledLocations[counter] = 0;
+					
+				counter++;
+			}		
+    }
 }
 
 
