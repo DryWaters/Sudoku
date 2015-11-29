@@ -153,7 +153,10 @@ public class Sudoku {
 				pnlPuzzle.setVisible(false);
 				pnlCreateButtonNavigation.setVisible(false);
 				pnlNumberSelector.setVisible(false);
+				pnlClear.setVisible(false);
+				btnSelection=null;
 				pnlMain.setVisible(true);
+				
 				
 			}
 			
@@ -202,6 +205,8 @@ public class Sudoku {
 				pnlPuzzle.setVisible(false);
 				pnlButtonNavigation.setVisible(false);
 				pnlNumberSelector.setVisible(false);
+				pnlClear.setVisible(false);
+				btnSelection=null;
 
 				pnlMain.setVisible(true);
 				
