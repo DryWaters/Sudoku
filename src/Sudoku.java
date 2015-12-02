@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
@@ -31,8 +29,6 @@ import javax.swing.JTextPane;
 import javax.swing.border.MatteBorder;
 
 public class Sudoku {
-
-	private static final int N = 9;
 	
 	private JFrame frmMainFrame;
 	
@@ -60,56 +56,64 @@ public class Sudoku {
 	private int selectedRow;
 	private int selectedColumn;
 	
+	private String[] puzzleBorders = new String[81];
+	private String[] selectionBorders = new String[81];	
+	private String btnLabels[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	
 	private boolean isNewPuzzle = false;
 	private boolean puzzleDone = false;
 	private boolean hasErrors = false;
 	
 	private Generator puzzleGenerator;
 	private SudokuSolver sudokuSolver;
-	
-	
-	public static void main(String[] args) throws IOException {
+		
+//	Main just creates frame and sets it to visible
+	public static void main(String[] args) {
 		Sudoku window = new Sudoku();
 		window.frmMainFrame.setVisible(true);		
 	}
 
-	public Sudoku() throws IOException {
+//	Constructor to setup the frame and load resources.
+	public Sudoku() {
 		
+//		Initialize the blank puzzle to all 0's and write the file as a default.
 		for (int i = 0; i < 9; i++)
 			for (int j = 0; j < 9; j++)
 				blankPuzzle[i][j]=0;
 		
-		writeBlankPuzzle();
-		
-		frmMainFrame = new JFrame("Sudoku");
-		frmMainFrame.setResizable(false);
-		frmMainFrame.setBounds(100, 100, 900, 600);
-		frmMainFrame.setLayout(null);
-		frmMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		BufferedImage backgroundImage = ImageIO.read(new File("./resources/BackgroundSmallLogo.png"));
-		frmMainFrame.setContentPane(new JLabel(new ImageIcon(backgroundImage)));
-		
-		pnlNumberSelector = createNumberSelector();
-		pnlNumberSelector.setVisible(false);
-
+//		Create the initial frame, panels with backgrounds, and set the background and play music.
 		try {
+			loadResources();
+			writeBlankPuzzle();
+			frmMainFrame = new JFrame("Sudoku");
+			frmMainFrame.setResizable(false);
+			frmMainFrame.setBounds(100, 100, 900, 600);
+			frmMainFrame.setLayout(null);
+			frmMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			BufferedImage backgroundImage = ImageIO.read(new File("./resources/BackgroundSmallLogo.png"));
+			frmMainFrame.setContentPane(new JLabel(new ImageIcon(backgroundImage)));
 			pnlMain = createMainMenu();
 			pnlMain.setVisible(true);
-		} catch (UnsupportedAudioFileException e) {
+		} catch (IOException | UnsupportedAudioFileException e) {
+
 			e.printStackTrace();
 		}
-		pnlPlayButtonNavigation = createPlayButtonNavigation();
-		pnlPlayButtonNavigation.setVisible(false);
-		pnlCreateButtonNavigation = createButtonNavigation();
-		pnlCreateButtonNavigation.setVisible(false);
-		pnlClear = createClearPanel();
-		pnlClear.setVisible(false);
-				
+		
+//		Create the remaining panels that do not need file reads.
 		pnlInfo = createInfoPanel();
+		pnlNumberSelector = createNumberSelector();
+		pnlClear = createClearPanel();
+		pnlPlayButtonNavigation = createPlayButtonNavigation();
+		pnlCreateButtonNavigation = createButtonNavigation();
+		
+//		Hide all of the panels except the main menu.
 		pnlInfo.setVisible(false);
+		pnlNumberSelector.setVisible(false);		
+		pnlClear.setVisible(false);
+		pnlPlayButtonNavigation.setVisible(false);
+		pnlCreateButtonNavigation.setVisible(false);
 		
-		
-		
+//		Add all the panels to the frame.
 		frmMainFrame.add(pnlNumberSelector);	
 		frmMainFrame.add(pnlMain);
 		frmMainFrame.add(pnlInfo);
@@ -118,33 +122,45 @@ public class Sudoku {
 		frmMainFrame.add(pnlClear);
 	}
 	
+//	Panel just created to hold the clear button when creating or playing a puzzle.
 	private JPanel createClearPanel() {
 	
+//		Creates one button on the panel and adds the ActionListener class called ClearSelection()
 		JPanel pnlClearButton = new JPanel();
-		JButton btnClearButton = new JButton("Clear");
-						
 		pnlClearButton.setLayout(null);
 		pnlClearButton.setBounds(725, 375, 75, 30);
+		
+		JButton btnClearButton = new JButton("Clear");
 		btnClearButton.setBounds(0,0,75,30);
-		btnClearButton.addActionListener(new ClearSelection());
-		
-		
+		btnClearButton.addActionListener(new ClearSelection());						
+			
 		pnlClearButton.add(btnClearButton);
 		
 		return pnlClearButton;
 	}
 
+//	Panel to hold the options for a user that selects to create a new puzzle.
 	private JPanel createButtonNavigation() {
 				
+//		Creates two buttons on the panel.  One to generate a random puzzle and one to return to main menu.
 		JPanel pnlCreateButtonNavigation = new JPanel();
+		pnlCreateButtonNavigation.setBackground(Color.WHITE);
+		pnlCreateButtonNavigation.setLayout(null);
+		pnlCreateButtonNavigation.setBounds(0, 0, 200, 600);
 		
 		JButton btnGoBack = new JButton("To Main");
-		JButton btnGenerate = new JButton ("Generate");
-		btnGenerate.setBounds(75, 250, 100, 50);
 		btnGoBack.setBounds(75, 150, 100, 50);
 		
+		JButton btnGenerate = new JButton ("Generate");
+		btnGenerate.setBounds(75, 250, 100, 50);
+		
+		pnlCreateButtonNavigation.add(btnGoBack);
+		pnlCreateButtonNavigation.add(btnGenerate);		
+		
+//		Actions for Generate Puzzle:  Creates a new Generator object and runs the method to write a random puzzle to puzzle.txt,
+//		removes the previous puzzle panel from the frame, and then creates a new panel with the new file, also automatically 
+//		sets the errors to false because we are loading pre-generated puzzles.
 		btnGenerate.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -157,23 +173,23 @@ public class Sudoku {
 					pnlPuzzle.revalidate();
 					hasErrors = false;
 				} catch (IOException e1) {
-
 					e1.printStackTrace();
 				}
-				
-				
 			}
-			
 		});
 		
-		
+//		Actions for return to Main Menu:  Checks if there are errors with the puzzle the user created. If so, they are prompted if they are sure they want to play.
+//		It also sets the visibility for the panels to:  pnlPuzzle - False, pnlNumberSelector - False, pnlClear - False, pnlMain - True.
+//		It also clears the pointer to their selection, if they click to go back to the main menu before selecting a number.
 		btnGoBack.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
+//					If the puzzle has reported problems then prompt the user.
 					if (hasErrors)
 					{
+//						Choice 0 = "YES" play puzzle
+//						Choice 1 = "NO" messed up puzzle and want to return
 						int choice = 0;
 						choice = JOptionPane.showConfirmDialog(null,  "There are errors.  Are you sure you want to create this puzzle?", "Errors", JOptionPane.YES_NO_OPTION);
 						if (choice == 0)
@@ -188,8 +204,12 @@ public class Sudoku {
 							btnSelection=null;
 							pnlMain.setVisible(true);
 						}
-
+						else
+						{
+						// Do nothing
+						}
 					}
+//					If no errors, then just writes their puzzle and shows main menu panel.
 					else {
 						writePuzzle();
 						puzzle=readFile(1);
@@ -202,47 +222,44 @@ public class Sudoku {
 						pnlMain.setVisible(true);
 					}
 					
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
-
-				
 			}
-			
 		});
-		
-		
-		
-		
-		
-		pnlCreateButtonNavigation.setBackground(Color.WHITE);
 				
-		pnlCreateButtonNavigation.setLayout(null);
-		pnlCreateButtonNavigation.setBounds(0, 0, 200, 600);
-		
-		pnlCreateButtonNavigation.add(btnGoBack);
-		pnlCreateButtonNavigation.add(btnGenerate);
-		
 		return pnlCreateButtonNavigation;
 	}
 	
-	
+//	Panel to hold the options for a user that selects to play a puzzle.
 	private JPanel createPlayButtonNavigation() {
 		
+//		Creates two buttons on the panel.  One to solve a puzzle and one to return to main menu.
 		JPanel pnlButtonNavigation = new JPanel();
+		pnlButtonNavigation.setBackground(Color.WHITE);
+		pnlButtonNavigation.setLayout(null);
+		pnlButtonNavigation.setBounds(0, 0, 200, 600);
 		
 		JButton btnGoBack = new JButton("Main");
+		btnGoBack.setBounds(75, 150, 100, 50);
+		
 		JButton btnSolve = new JButton("Solve");
 		btnSolve.setBounds(75, 250, 100, 50);
-		btnSolve.addActionListener(new ActionListener() {
+			
+		pnlButtonNavigation.add(btnGoBack);
+		pnlButtonNavigation.add(btnSolve);
 
+		
+//		Actions for Solve Puzzle:  Creates a new Solver object and runs the method (findLastK) to know when to stop the recursion
+//		It then solves the puzzle with the method (test) and writes that to "answer.txt".  It then removes the previous puzzle and recreates a new panel
+//		after reading in the answer from readFile(3)
+		btnSolve.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				sudokuSolver = new SudokuSolver();
 				int lastK = sudokuSolver.findLastK(puzzle);
+			
+//				Will only try and solve a puzzle if there are less than 61 empty squares and there are no reported errors.
 				try {
 					if ((countEmpty() <= 60) && (!hasErrors))
 					{
@@ -255,38 +272,28 @@ public class Sudoku {
 					}
 					else
 					{
+//						If the puzzle has users, it lets the user know to fix the problems.
 						if (hasErrors)
 						{
 							JOptionPane.showMessageDialog(null, "Current puzzle has errors.  Please fix before using \"Solve\" button!", "Error", JOptionPane.ERROR_MESSAGE);
-						} else {
+						} 
+						else {
 							JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);	
 						}
-						
 					}
-					
 
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
-				
-				
-				
 			}
-			
-			
-			
 		});
 		
-		
-		btnGoBack.setBounds(75, 150, 100, 50);
+//		Actions for GoBack:  If the user returns and the puzzle is already completed, then clear and start over.
+//		If it is not solved, then save the user's current progress to "editedPuzzle.txt"
 		btnGoBack.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				
-
-				
 				try {
 					if(puzzleDone)
 					{
@@ -297,64 +304,54 @@ public class Sudoku {
 					}
 					else
 						writeUserPuzzle();
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
 				pnlPuzzle.setVisible(false);
 				pnlButtonNavigation.setVisible(false);
 				pnlNumberSelector.setVisible(false);
 				pnlClear.setVisible(false);
 				btnSelection=null;
-
-				pnlMain.setVisible(true);
-				
+				pnlMain.setVisible(true);	
 			}
-
 		});
-		
-		
-		pnlButtonNavigation.setBackground(Color.WHITE);
-				
-		pnlButtonNavigation.setLayout(null);
-		pnlButtonNavigation.setBounds(0, 0, 200, 600);
-		
-		pnlButtonNavigation.add(btnGoBack);
-		pnlButtonNavigation.add(btnSolve);
 		
 		return pnlButtonNavigation;
 	}
 
+//	Create panel to show who did the coding and then music that is used.  Creates one button for returning back.
 	private JPanel createInfoPanel()
 	{
+		JPanel pnlInfo = new JPanel();
+		pnlInfo.setLayout(null);
+		pnlInfo.setBounds(0, 0, 900, 600);
+
+//		Use return image icon for the button to return to main menu
+		JButton btnReturn = new JButton("Return");
+		ImageIcon returnImage = new ImageIcon("./resources/Return.png");
+		btnReturn.setBounds(410, 500, 60, 60);
+		btnReturn.setIcon(returnImage);
+		
 		String infoText = "<html><center><h1>Coding</h1><h3>Sang Tan Le</h3><h1>GUI</h1><h3>Daniel Waters</h3>"
 				+ "<h1>Music</h1><h3>longzijun<br>https://longzijun.wordpress.com/</center></html>";
-		
-		JPanel pnlInfo = new JPanel();
-		JButton btnReturn = new JButton("Return");
 		JTextPane txtCredits = new JTextPane();
 		txtCredits.setBounds(90, 150, 700, 350);
 		txtCredits.setContentType("text/html");
 		txtCredits.setText(infoText);
-		
-				
-		pnlInfo.setLayout(null);
-		pnlInfo.setBounds(0, 0, 900, 600);
-		
+					
+//		Use a JLabel to cover the entire panel with a background image.
 		ImageIcon smallBackgroundIcon = new ImageIcon("./resources/BackgroundSmallLogo.png");
-		
 		JLabel background = new JLabel();
 		background.setIcon(smallBackgroundIcon);
 		background.setBounds(0, 0, 900, 600);
 		
+		pnlInfo.add(btnReturn);		
+		pnlInfo.add(txtCredits);
+		pnlInfo.add(background);
 				
-		ImageIcon returnImage = new ImageIcon("./resources/Return.png");
-		
-		
-		btnReturn.setBounds(410, 500, 60, 60);
-		btnReturn.setIcon(returnImage);
-		
+//		Return to main menu action.  Just sets the info panel visability to false and the main menu to true.
 		btnReturn.addActionListener(new ActionListener() {
 
 			@Override
@@ -364,24 +361,18 @@ public class Sudoku {
 			}
 		});
 		
-		pnlInfo.add(btnReturn);		
-		pnlInfo.add(txtCredits);
-		pnlInfo.add(background);
-		
 		return pnlInfo;
-		
 	}
 	
+//	Create the panel to hold the numbers for selection purposes
 	private JPanel createNumberSelector()
 	{
 		JPanel pnlNumberSelector = new JPanel();
-
-			
 		pnlNumberSelector.setLayout(new GridLayout(3,3));
 		pnlNumberSelector.setBounds(700, 240, 125, 125);
 		
-		String btnLabels[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
-				
+//		Assigns the images based on the location in the array btnLabels
+//		Also assigns an ActionListener class "CheckSelection()" to each button.
 		for (int i = 0; i < btnLabels.length; i++)
 		{
 			btnNumberSelectors[i] = new JButton(btnLabels[i]);
@@ -390,13 +381,11 @@ public class Sudoku {
 			pnlNumberSelector.add(btnNumberSelectors[i]);
 		}
 			
-		
 		return pnlNumberSelector;
 	}
 	
 	private JPanel createMainMenu() throws UnsupportedAudioFileException 
 	{
-
 		
         try {
         	AudioInputStream audioBackgroundStream = AudioSystem.getAudioInputStream(new File("./resources/backgroundMusic.wav"));			
@@ -591,51 +580,6 @@ public class Sudoku {
 	
 	private JButton setButton(JButton button, int value, int location)
 	{
-		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
-				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
-				 "./resources/Button7.png", "./resources/Button8.png", "./resources/Button9.png"};
-			for (int i = 0; i < buttonImageList.length; i++)
-				buttonImages[i] = new ImageIcon(buttonImageList[i]);
-		
-			final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
-				"./resources/Button4Rollover.png", "./resources/Button5Rollover.png", "./resources/Button6Rollover.png", "./resources/Button7Rollover.png",
-				"./resources/Button8Rollover.png", "./resources/Button9Rollover.png"};
-			for (int i = 0; i < buttonRolloverImageList.length; i++)
-				buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
-		
-			final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
-				"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
-				"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
-			for (int i = 0; i < buttonPressedImageList.length; i++)
-				buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
-			
-			final String[] buttonDisabledImageList = {"./resources/Button1Disabled.png", "./resources/Button1Disabled.png", "./resources/Button2Disabled.png", "./resources/Button3Disabled.png",
-					"./resources/Button4Disabled.png", "./resources/Button5Disabled.png", "./resources/Button6Disabled.png", "./resources/Button7Disabled.png",
-					"./resources/Button8Disabled.png", "./resources/Button9Disabled.png"};
-				for (int i = 0; i < buttonPressedImageList.length; i++)
-					buttonDisabledImages[i] = new ImageIcon(buttonDisabledImageList[i]);
-					
-			final String[] puzzleBorders = 
-			{"3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1", "3,1,1,1", 
-				"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
-			 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
-			 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
-			 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
-			 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3",
-			 "3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1", "3,1,1,1",
-			 	"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
-			 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
-			 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
-			 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
-			 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3",
-			 "3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1" ,"3,1,1,1",
-			 	"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
-		 	 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
-		 	 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
-		 	 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
-		 	 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3"			 			
-				};
-		
 		
 		String[] border = puzzleBorders[location].split(",");
 		button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
@@ -657,40 +601,10 @@ public class Sudoku {
 	
 	private JButton setButton(JButton button, int value)
 	{
-		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
-				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
-				 "./resources/Button7.png", "./resources/Button8.png", "./resources/Button9.png"};
-		for (int i = 0; i < buttonImageList.length; i++)
-			buttonImages[i] = new ImageIcon(buttonImageList[i]);
-		
-		final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
-				"./resources/Button4Rollover.png", "./resources/Button5Rollover.png", "./resources/Button6Rollover.png", "./resources/Button7Rollover.png",
-				"./resources/Button8Rollover.png", "./resources/Button9Rollover.png"};
-		for (int i = 0; i < buttonRolloverImageList.length; i++)
-			buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
-		
-		final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
-			"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
-			"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
-		for (int i = 0; i < buttonPressedImageList.length; i++)
-			buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
-		
-		final String[] buttonErrorImageList = {"./resources/Button0Error.png", "./resources/Button1Error.png", "./resources/Button2Error.png", "./resources/Button3Error.png",
-				"./resources/Button4Error.png", "./resources/Button5Error.png", "./resources/Button6Error.png", "./resources/Button7Error.png",
-				"./resources/Button8Error.png", "./resources/Button9Error.png"};
-			for (int i = 0; i < buttonErrorImageList.length; i++)
-				buttonErrorImages[i] = new ImageIcon(buttonErrorImageList[i]);
 		
 		
-		
-		
-		final String[] puzzleBorders = 
-			{"0,0,0,0", "5,5,1,1", "5,1,1,1", "5,1,1,5", "1,5,1,1", "1,1,1,1", 
-				"1,1,1,5", "1,5,5,1", "1,1,5,1", "1,1,5,5" 	
-			};
 			
-			
-		String[] border = puzzleBorders[value].split(",");
+		String[] border = selectionBorders[value].split(",");
 		button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
 				Integer.parseInt(border[1]), Integer.parseInt(border[2]), 
 				Integer.parseInt(border[3]), Color.BLACK));
@@ -914,8 +828,6 @@ public class Sudoku {
 				table[row][col] = Integer.parseInt(parts[col]);
 			}		
 			
-
-    	
 		int counter = 0;
 		for (int row = 0; row < 9;row++)
 			for (int col = 0; col < 9; col++)
@@ -1002,6 +914,73 @@ public class Sudoku {
 				if (puzzle[i][j] == 0)					
 					counter++;
 		return counter;
+	}
+	
+	private void loadResources() {
+		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
+				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
+				 "./resources/Button7.png", "./resources/Button8.png", "./resources/Button9.png"};
+		for (int i = 0; i < buttonImageList.length; i++)
+			buttonImages[i] = new ImageIcon(buttonImageList[i]);
+		
+		final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
+				"./resources/Button4Rollover.png", "./resources/Button5Rollover.png", "./resources/Button6Rollover.png", "./resources/Button7Rollover.png",
+				"./resources/Button8Rollover.png", "./resources/Button9Rollover.png"};
+		for (int i = 0; i < buttonRolloverImageList.length; i++)
+			buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
+		
+		final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
+				"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
+				"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
+		for (int i = 0; i < buttonPressedImageList.length; i++)
+			buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
+			
+		final String[] buttonDisabledImageList = {"./resources/Button1Disabled.png", "./resources/Button1Disabled.png", "./resources/Button2Disabled.png", "./resources/Button3Disabled.png",
+					"./resources/Button4Disabled.png", "./resources/Button5Disabled.png", "./resources/Button6Disabled.png", "./resources/Button7Disabled.png",
+					"./resources/Button8Disabled.png", "./resources/Button9Disabled.png"};
+		for (int i = 0; i < buttonPressedImageList.length; i++)
+				buttonDisabledImages[i] = new ImageIcon(buttonDisabledImageList[i]);
+				
+		final String[] buttonErrorImageList = {"./resources/Button0Error.png", "./resources/Button1Error.png", "./resources/Button2Error.png", "./resources/Button3Error.png",
+				"./resources/Button4Error.png", "./resources/Button5Error.png", "./resources/Button6Error.png", "./resources/Button7Error.png",
+				"./resources/Button8Error.png", "./resources/Button9Error.png"};
+			for (int i = 0; i < buttonErrorImageList.length; i++)
+				buttonErrorImages[i] = new ImageIcon(buttonErrorImageList[i]);
+			
+		final String[] puzzleBorderMeasurements = 
+			{"3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1", "3,1,1,1", 
+				"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
+			 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
+			 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
+			 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
+			 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3",
+			 "3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1", "3,1,1,1",
+			 	"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
+			 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
+			 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
+			 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
+			 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3",
+			 "3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1" ,"3,1,1,1",
+			 	"3,1,1,3", "3,3,1,1", "3,1,1,1", "3,1,1,3",
+		 	 "1,3,1,1", "1,1,1,1", "1,1,1,3", "1,3,1,1", "1,1,1,1",
+		 	 	"1,1,1,3", "1,3,1,1", "1,1,1,1", "1,1,1,3",
+		 	 "1,3,3,1", "1,1,3,1", "1,1,3,3", "1,3,3,1", "1,1,3,1",
+		 	 	"1,1,3,3", "1,3,3,1", "1,1,3,1", "1,1,3,3"			 			
+				};
+		
+		for (int i = 0; i < puzzleBorderMeasurements.length; i++)
+			puzzleBorders[i] = new String(puzzleBorderMeasurements[i]);
+		
+		
+		final String[] selectionBorderMeasurements = 
+			{"0,0,0,0", "5,5,1,1", "5,1,1,1", "5,1,1,5", "1,5,1,1", "1,1,1,1", 
+				"1,1,1,5", "1,5,5,1", "1,1,5,1", "1,1,5,5" 	
+			};
+		
+		for (int i = 0; i < selectionBorderMeasurements.length; i++)
+			selectionBorders[i] = new String(selectionBorderMeasurements[i]);
+		
+			
 	}
 		
 }
