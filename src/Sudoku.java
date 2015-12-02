@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,7 +33,6 @@ import javax.swing.border.MatteBorder;
 public class Sudoku {
 
 	private static final int N = 9;
-	
 	
 	private JFrame frmMainFrame;
 	
@@ -63,6 +62,11 @@ public class Sudoku {
 	
 	private boolean isNewPuzzle = false;
 	private boolean puzzleDone = false;
+	private boolean hasErrors = false;
+	
+	private Generator puzzleGenerator;
+	private SudokuSolver sudokuSolver;
+	
 	
 	public static void main(String[] args) throws IOException {
 		Sudoku window = new Sudoku();
@@ -75,6 +79,7 @@ public class Sudoku {
 			for (int j = 0; j < 9; j++)
 				blankPuzzle[i][j]=0;
 		
+		writeBlankPuzzle();
 		
 		frmMainFrame = new JFrame("Sudoku");
 		frmMainFrame.setResizable(false);
@@ -130,19 +135,73 @@ public class Sudoku {
 	}
 
 	private JPanel createButtonNavigation() {
-		
+				
 		JPanel pnlCreateButtonNavigation = new JPanel();
 		
 		JButton btnGoBack = new JButton("To Main");
+		JButton btnGenerate = new JButton ("Generate");
+		btnGenerate.setBounds(75, 250, 100, 50);
 		btnGoBack.setBounds(75, 150, 100, 50);
+		
+		btnGenerate.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					puzzleGenerator = new Generator();
+					puzzleGenerator.generate();
+					puzzle = readFile(1);
+					frmMainFrame.remove(pnlPuzzle);
+					pnlPuzzle = createPuzzle();
+					frmMainFrame.add(pnlPuzzle);
+					pnlPuzzle.revalidate();
+					hasErrors = false;
+				} catch (IOException e1) {
+
+					e1.printStackTrace();
+				}
+				
+				
+			}
+			
+		});
+		
+		
 		btnGoBack.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					writePuzzle();
-					puzzle=readFile(1);
-					checkDisabledLocations();
+					if (hasErrors)
+					{
+						int choice = 0;
+						choice = JOptionPane.showConfirmDialog(null,  "There are errors.  Are you sure you want to create this puzzle?", "Errors", JOptionPane.YES_NO_OPTION);
+						if (choice == 0)
+						{
+							writePuzzle();
+							puzzle=readFile(1);
+							checkDisabledLocations();
+							pnlPuzzle.setVisible(false);
+							pnlCreateButtonNavigation.setVisible(false);
+							pnlNumberSelector.setVisible(false);
+							pnlClear.setVisible(false);
+							btnSelection=null;
+							pnlMain.setVisible(true);
+						}
+
+					}
+					else {
+						writePuzzle();
+						puzzle=readFile(1);
+						checkDisabledLocations();
+						pnlPuzzle.setVisible(false);
+						pnlCreateButtonNavigation.setVisible(false);
+						pnlNumberSelector.setVisible(false);
+						pnlClear.setVisible(false);
+						btnSelection=null;
+						pnlMain.setVisible(true);
+					}
+					
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -150,17 +209,13 @@ public class Sudoku {
 				}
 
 
-				pnlPuzzle.setVisible(false);
-				pnlCreateButtonNavigation.setVisible(false);
-				pnlNumberSelector.setVisible(false);
-				pnlClear.setVisible(false);
-				btnSelection=null;
-				pnlMain.setVisible(true);
-				
 				
 			}
 			
 		});
+		
+		
+		
 		
 		
 		pnlCreateButtonNavigation.setBackground(Color.WHITE);
@@ -169,6 +224,7 @@ public class Sudoku {
 		pnlCreateButtonNavigation.setBounds(0, 0, 200, 600);
 		
 		pnlCreateButtonNavigation.add(btnGoBack);
+		pnlCreateButtonNavigation.add(btnGenerate);
 		
 		return pnlCreateButtonNavigation;
 	}
@@ -178,7 +234,51 @@ public class Sudoku {
 		
 		JPanel pnlButtonNavigation = new JPanel();
 		
-		JButton btnGoBack = new JButton("To Main");
+		JButton btnGoBack = new JButton("Main");
+		JButton btnSolve = new JButton("Solve");
+		btnSolve.setBounds(75, 250, 100, 50);
+		btnSolve.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				sudokuSolver = new SudokuSolver();
+				int lastK = sudokuSolver.findLastK(puzzle);
+				try {
+					if ((countEmpty() <= 60) && (!hasErrors))
+					{
+						sudokuSolver.test(0, puzzle, lastK);
+						puzzle = readFile(3);
+						frmMainFrame.remove(pnlPuzzle);
+						pnlPuzzle = createPuzzle();
+						frmMainFrame.add(pnlPuzzle);
+						frmMainFrame.revalidate();
+					}
+					else
+					{
+						if (hasErrors)
+						{
+							JOptionPane.showMessageDialog(null, "Current puzzle has errors.  Please fix before using \"Solve\" button!", "Error", JOptionPane.ERROR_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);	
+						}
+						
+					}
+					
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				
+				
+				
+			}
+			
+			
+			
+		});
+		
+		
 		btnGoBack.setBounds(75, 150, 100, 50);
 		btnGoBack.addActionListener(new ActionListener() {
 
@@ -221,6 +321,7 @@ public class Sudoku {
 		pnlButtonNavigation.setBounds(0, 0, 200, 600);
 		
 		pnlButtonNavigation.add(btnGoBack);
+		pnlButtonNavigation.add(btnSolve);
 		
 		return pnlButtonNavigation;
 	}
@@ -404,6 +505,7 @@ public class Sudoku {
 					frmMainFrame.revalidate();
 					isNewPuzzle = false;
 					puzzleDone = false;
+					hasErrors = false;
 						
 				} catch (IOException e1) {
 					
@@ -718,8 +820,10 @@ public class Sudoku {
 				
 		if (choice == 0)
 			file = new FileReader("editedPuzzle.txt");
-		else
+		else if (choice == 1)
 			file = new FileReader("puzzle.txt");
+		else
+			file = new FileReader("answer.txt");
 		
 		BufferedReader reader = new BufferedReader(file);
 		
@@ -832,12 +936,18 @@ public class Sudoku {
 		//Check row 
 		for (int i = 0; i<9; i++)
 			if (puzzle[i][column] == number)
+			{
+				hasErrors = true;
 				return false;
+			}
 
 		//Check column
 		for (int i = 0; i<9; i++)
 			if (puzzle[row][i] == number)
+			{
+				hasErrors = true;
 				return false;
+			}
 
 		//Check small block 3x3
 		int tmpX = row % 3; 
@@ -845,8 +955,12 @@ public class Sudoku {
 		for (int k = row - tmpX; k <= row - tmpX + 2; k++)
 			for (int t = column - tmpY; t <= column - tmpY + 2; t++)
 				if (puzzle[k][t] == number)
+				{
+					hasErrors = true;
 					return false;
-		
+				}
+					
+		hasErrors = false;
 		return true;
 	}
 	
@@ -879,6 +993,15 @@ public class Sudoku {
 		}
 
 		puzzleDone = true;
+	}
+	
+	private int countEmpty() {
+		int counter = 0;
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++)
+				if (puzzle[i][j] == 0)					
+					counter++;
+		return counter;
 	}
 		
 }
