@@ -244,11 +244,20 @@ public class Sudoku {
 				sudokuSolver = new SudokuSolver();
 				int lastK = sudokuSolver.findLastK(puzzle);
 				try {
-					sudokuSolver.test(0, puzzle, lastK);
-					frmMainFrame.remove(pnlPuzzle);
-					pnlPuzzle = createPuzzle();
-					frmMainFrame.add(pnlPuzzle);
-					frmMainFrame.revalidate();
+					if (countEmpty() <= 60)
+					{
+						sudokuSolver.test(0, puzzle, lastK);
+						puzzle = readFile(3);
+						frmMainFrame.remove(pnlPuzzle);
+						pnlPuzzle = createPuzzle();
+						frmMainFrame.add(pnlPuzzle);
+						frmMainFrame.revalidate();
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);
+					}
+					
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -805,8 +814,10 @@ public class Sudoku {
 				
 		if (choice == 0)
 			file = new FileReader("editedPuzzle.txt");
-		else
+		else if (choice == 1)
 			file = new FileReader("puzzle.txt");
+		else
+			file = new FileReader("answer.txt");
 		
 		BufferedReader reader = new BufferedReader(file);
 		
@@ -976,6 +987,15 @@ public class Sudoku {
 		}
 
 		puzzleDone = true;
+	}
+	
+	private int countEmpty() {
+		int counter = 0;
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++)
+				if (puzzle[i][j] == 0)					
+					counter++;
+		return counter;
 	}
 		
 }
