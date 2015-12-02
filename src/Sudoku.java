@@ -244,7 +244,7 @@ public class Sudoku {
 				sudokuSolver = new SudokuSolver();
 				int lastK = sudokuSolver.findLastK(puzzle);
 				try {
-					if (countEmpty() <= 60)
+					if ((countEmpty() <= 60) && (!hasErrors))
 					{
 						sudokuSolver.test(0, puzzle, lastK);
 						puzzle = readFile(3);
@@ -255,7 +255,13 @@ public class Sudoku {
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);
+						if (hasErrors)
+						{
+							JOptionPane.showMessageDialog(null, "Current puzzle has errors.  Please fix before using \"Solve\" button!", "Error", JOptionPane.ERROR_MESSAGE);
+						} else {
+							JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);	
+						}
+						
 					}
 					
 
