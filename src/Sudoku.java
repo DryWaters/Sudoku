@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -65,6 +65,8 @@ public class Sudoku {
 	private boolean hasErrors = false;
 	
 	private Generator puzzleGenerator;
+	private SudokuSolver sudokuSolver;
+	
 	
 	public static void main(String[] args) throws IOException {
 		Sudoku window = new Sudoku();
@@ -232,7 +234,36 @@ public class Sudoku {
 		
 		JPanel pnlButtonNavigation = new JPanel();
 		
-		JButton btnGoBack = new JButton("To Main");
+		JButton btnGoBack = new JButton("Main");
+		JButton btnSolve = new JButton("Solve");
+		btnSolve.setBounds(75, 250, 100, 50);
+		btnSolve.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				sudokuSolver = new SudokuSolver();
+				int lastK = sudokuSolver.findLastK(puzzle);
+				try {
+					sudokuSolver.test(0, puzzle, lastK);
+					frmMainFrame.remove(pnlPuzzle);
+					pnlPuzzle = createPuzzle();
+					frmMainFrame.add(pnlPuzzle);
+					frmMainFrame.revalidate();
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				
+				
+				
+			}
+			
+			
+			
+		});
+		
+		
 		btnGoBack.setBounds(75, 150, 100, 50);
 		btnGoBack.addActionListener(new ActionListener() {
 
@@ -275,6 +306,7 @@ public class Sudoku {
 		pnlButtonNavigation.setBounds(0, 0, 200, 600);
 		
 		pnlButtonNavigation.add(btnGoBack);
+		pnlButtonNavigation.add(btnSolve);
 		
 		return pnlButtonNavigation;
 	}
