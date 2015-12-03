@@ -724,6 +724,7 @@ public class Sudoku {
 			if ((btnSelection == null))
 			{
 				btnSelection = (Button) e.getSource();
+				System.out.println(btnSelection.getText());
 				myStack.push(new Move(btnSelection.getText(), btnSelection.getLocationValue()));
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
@@ -1009,16 +1010,15 @@ public class Sudoku {
 			if (!myStack.isEmpty())
 			{
 				Move temp = myStack.pop();
-				int location = temp.getLocation();
-
+				
 				for(int i = 0; i < 81; i++)
 				{
-					int test = btnNumbers[i].getLocationValue();
-					if ( test == location)
+					if (i == temp.getLocation())
 					{
+						System.out.printf("%s", temp.getValue());
 						puzzle[selectedRow][selectedColumn] = Integer.parseInt(temp.getValue());
 						hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
-						setButton(btnNumbers[location], Integer.parseInt(temp.getValue()), location);
+						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);
 					}
 				}
 			}
