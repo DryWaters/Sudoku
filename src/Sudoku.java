@@ -787,7 +787,6 @@ public class Sudoku {
     	writer.close();
     }
     
-    // Sang comments
     //Prevent player to click on original numbers
     private void checkDisabledLocations() throws IOException
     {
