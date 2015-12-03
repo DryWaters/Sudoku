@@ -30,6 +30,7 @@ import javax.swing.border.MatteBorder;
 
 public class Sudoku {
 	
+	//Reference variables
 	private JFrame frmMainFrame;
 	
 	private JPanel pnlNumberSelector;
@@ -72,7 +73,7 @@ public class Sudoku {
 	public static void main(String[] args) {
 		Sudoku window = new Sudoku();
 		window.frmMainFrame.setVisible(true);		
-	}
+	}//end main
 
 //	Constructor to setup the frame and load resources.
 	public Sudoku() {
@@ -143,7 +144,7 @@ public class Sudoku {
 //	Panel to hold the options for a user that selects to create a new puzzle.
 	private JPanel createButtonNavigation() {
 				
-//		Creates two buttons on the panel.  One to generate a random puzzle and one to return to main menu.
+//		Creates three buttons on the panel.  One to generate a random puzzle , one to undo previous choice, and one to return to main menu.
 		JPanel pnlCreateButtonNavigation = new JPanel();
 		pnlCreateButtonNavigation.setBackground(Color.WHITE);
 		pnlCreateButtonNavigation.setLayout(null);
@@ -241,7 +242,7 @@ public class Sudoku {
 //	Panel to hold the options for a user that selects to play a puzzle.
 	private JPanel createPlayButtonNavigation() {
 		
-//		Creates two buttons on the panel.  One to solve a puzzle and one to return to main menu.
+//		Creates three buttons on the panel.  One to solve a puzzle, one to undo the previous choice, and one to return to main menu.
 		JPanel pnlButtonNavigation = new JPanel();
 		pnlButtonNavigation.setBackground(Color.WHITE);
 		pnlButtonNavigation.setLayout(null);
@@ -364,7 +365,7 @@ public class Sudoku {
 		pnlInfo.add(txtCredits);
 		pnlInfo.add(background);
 				
-//		Return to main menu action.  Just sets the info panel visability to false and the main menu to true.
+//		Return to main menu action.  Just sets the info panel visibility to false and the main menu to true.
 		btnReturn.addActionListener(new ActionListener() {
 
 			@Override
@@ -397,49 +398,45 @@ public class Sudoku {
 		return pnlNumberSelector;
 	}
 	
+//	Create the panel for the Main Menu	
 	private JPanel createMainMenu() throws UnsupportedAudioFileException 
 	{
-		
+//		Play the background music
         try {
         	AudioInputStream audioBackgroundStream = AudioSystem.getAudioInputStream(new File("./resources/backgroundMusic.wav"));			
     		Clip clipBackgroundMusic = AudioSystem.getClip( );
 			clipBackgroundMusic.open(audioBackgroundStream);
 	        clipBackgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
 	        clipBackgroundMusic.start( );
-		} catch (LineUnavailableException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (LineUnavailableException | IOException e) {
 			e.printStackTrace();
 		}
 		
 		ImageIcon backgroundIcon = new ImageIcon("./resources/MainBackground.png");
-
-		
 		JLabel background = new JLabel();
+		ImageIcon infoImage = new ImageIcon("./resources/Info.png");
+		
 		background.setIcon(backgroundIcon);
 		background.setBounds(0, 0, 900, 600);
-		       
-        
+		         
 		JPanel pnlMain = new JPanel();
 		pnlMain.setLayout(null);
 		pnlMain.setBounds(0, 0, 900, 600);
-		
-		
-				
+			
 		JButton btnCreatePuzzle = new JButton("Create Puzzle");
-		JButton btnPlayPuzzle = new JButton("Play Puzzle");
-		
-		
-		JButton btnInfoSelect = new JButton("Info");
-		ImageIcon infoImage = new ImageIcon("./resources/Info.png");
-		btnInfoSelect.setIcon(infoImage);
-		
-		
-
-	
 		btnCreatePuzzle.setBounds(375, 325, 150, 40);
+		JButton btnPlayPuzzle = new JButton("Play Puzzle");
 		btnPlayPuzzle.setBounds(375, 400, 150, 40);
+		JButton btnInfoSelect = new JButton("Info");
+		btnInfoSelect.setIcon(infoImage);
 		btnInfoSelect.setBounds(600, 500, 33, 35);
+		
+		pnlMain.add(btnCreatePuzzle);
+		pnlMain.add(btnPlayPuzzle);
+		pnlMain.add(btnInfoSelect);
+		pnlMain.add(background);
+				
+//		Action for Info is to just change the visibility to Info panel to true and Main Menu to false
 		btnInfoSelect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -448,6 +445,9 @@ public class Sudoku {
 			}
 		});
 		
+//		Actions for playing a puzzle is:  Remove the current panel if it exists and then if a previous worked puzzle exits, 
+//		then prompt user if they want to play that one. checkFile().
+//		Then create a new puzzle panel by reading in the file and calling createPuzzle().
 		btnPlayPuzzle.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -457,13 +457,10 @@ public class Sudoku {
 					if (pnlPuzzle!= null)
 					{
 						frmMainFrame.remove(pnlPuzzle);
-
 					}	
 					
 					try {
 						checkFile();
-						
-
 						pnlPuzzle = createPuzzle();
 						frmMainFrame.add(pnlPuzzle);
 						pnlPuzzle.setVisible(true);
@@ -471,16 +468,12 @@ public class Sudoku {
 						isNewPuzzle = true;
 						
 					} catch (IOException e1) {
-					
 						e1.printStackTrace();
-					
 					}
-
-					
-
 			}
 		});
 		
+//		Actions for creating a puzzle is:  always start with a new blank puzzle.  writeBlankPuzzle();  Then remove the previous panel and create a new one if it exists.
 		btnCreatePuzzle.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -494,11 +487,9 @@ public class Sudoku {
 				if (pnlPuzzle!= null)
 				{
 					frmMainFrame.remove(pnlPuzzle);
-					
 				}	
 				
 				try {
-					
 					puzzle = readFile(1);
 					checkDisabledLocations();
 					pnlPuzzle = createPuzzle();
@@ -510,35 +501,15 @@ public class Sudoku {
 					hasErrors = false;
 						
 				} catch (IOException e1) {
-					
 						e1.printStackTrace();
-					
 					}
-
-					
-
 			}
 		});	
 		
-		
-		
-
-			
-		
-		pnlMain.add(btnCreatePuzzle);
-		pnlMain.add(btnPlayPuzzle);
-		pnlMain.add(btnInfoSelect);
-		pnlMain.add(background);
-
-		
-				
-		
-	
-		return pnlMain;
-		
+		return pnlMain;		
 	}
 	
-
+//	Check if user has already started on a puzzle.  If it exits then prompt the user if they want to load it.
 	private void checkFile() throws IOException
 	{
 		int choice;
@@ -552,15 +523,13 @@ public class Sudoku {
 		else
 			puzzle = readFile(1);
 		
-		checkDisabledLocations();
-		
+		checkDisabledLocations();	
 	}
 	
-	
+//	Create the puzzle panel.  Create a new stack to hold the undo
 	private JPanel createPuzzle() throws IOException 
 	{
 			
-		
 		JPanel pnlPuzzle = new JPanel();
 		pnlPuzzle.setLayout(new GridLayout(9,9));
 		pnlPuzzle.setBounds(230, 100, 400, 400);
@@ -570,9 +539,9 @@ public class Sudoku {
 		
 		int counter = 0;
 		
+//		Checks if the buttons already have information from the create puzzle, and disables those.
 		for(int i = 0; i < 9; i++)
 		{
-			
 			for(int j = 0; j < 9; j++)
 			{
 				btnNumbers[counter] = new Button(temp+puzzle[i][j], counter);
@@ -584,58 +553,50 @@ public class Sudoku {
 				setButton(btnNumbers[counter], puzzle[i][j], counter);
 				pnlPuzzle.add(btnNumbers[counter++]);
 				temp = "";
-				
 			}
 		}
-	
-		return pnlPuzzle;
 		
+		return pnlPuzzle;
 	}
 	
+//	Creates the borders and images for the puzzle buttons
 	private JButton setButton(JButton button, int value, int location)
 	{
-		
 		String[] border = puzzleBorders[location].split(",");
 		button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
 				Integer.parseInt(border[1]), Integer.parseInt(border[2]), 
 				Integer.parseInt(border[3]), Color.BLACK));
 		
-		
+//		Uses the 4 image arrays to assign the images.
 		button.setIcon(buttonImages[value%10]);
 		button.setRolloverIcon(buttonRolloverImages[value%10]);
 		button.setPressedIcon(buttonPressedImages[value%10]);
 		button.setDisabledIcon(buttonDisabledImages[value%10]);
-		
 		button.setRolloverEnabled(true);
-		
-				
 		
 		return button;
 	}
 	
+//	Creates the borders and images for the selection panel buttons 
 	private JButton setButton(JButton button, int value)
 	{
-		
-		
-			
 		String[] border = selectionBorders[value].split(",");
 		button.setBorder(new MatteBorder(Integer.parseInt(border[0]), 
 				Integer.parseInt(border[1]), Integer.parseInt(border[2]), 
 				Integer.parseInt(border[3]), Color.BLACK));
 			
-		
-			
+
+//		Uses only 3 image arrays to assign the images because selection buttons are never disabled.
 		button.setIcon(buttonImages[value%10]);
 		button.setRolloverIcon(buttonRolloverImages[value%10]);
 		button.setPressedIcon(buttonPressedImages[value%10]);
-		
 		button.setRolloverEnabled(true);
-		
-				
 		
 		return button;
 	}
 	
+//	ActionListener class that clears a selection.  It hides the number selector and clear button panels.
+//	It clears the value and assigns the blank images.
 	public class ClearSelection implements ActionListener
 	{
 		@Override
@@ -651,23 +612,22 @@ public class Sudoku {
 			puzzle[selectedRow][selectedColumn]=0;
 			hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
 
-								
 			btnSelection.setRolloverEnabled(true);
 			btnSelection.setEnabled(false);
 			btnSelection.setEnabled(true);
 			btnSelection = null;
-		
 		}		
 	}
 
-	
-	
-	
+//	ActionListener class to check what number the user selects from the number selection panel.
+//	It hides the number selection panel and clear panel.
+//	It also checks if the number is a valid selection and that the puzzle is done with isDone(); 
 	public class CheckSelection implements ActionListener
 	{
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			
+		public void actionPerformed(ActionEvent e) {		
+
+//			Locate which button the user clicks by comparing the ActionEvent to the list of buttons
 			for (int i = 0; i < btnNumberSelectors.length; i++)
 			{
 				if(e.getSource()== btnNumberSelectors[i]) 
@@ -675,6 +635,7 @@ public class Sudoku {
 					pnlNumberSelector.setVisible(false);
 					pnlClear.setVisible(false);
 					
+//					If the user chooses a valid selection, then change the images to valid images.
 					if (isValid(Integer.parseInt(e.getActionCommand())))
 					{
 						btnSelection.setRolloverIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
@@ -682,13 +643,15 @@ public class Sudoku {
 						btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
 						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+
+//						If it is valid then also check if puzzle is done.
 						if(isDone())
 						{
 							victoryDance();
 							btnSelection = null;
-							
 						}
-							
+
+//						If not done, then just assign the value.
 						else
 						{
 							btnSelection.setRolloverEnabled(true);
@@ -696,8 +659,9 @@ public class Sudoku {
 							btnSelection.setEnabled(true);
 							btnSelection = null;
 						}
-						
 					} 
+
+//					If the user chooses a non valid number then use the error images. 
 					else
 					{
 						btnSelection.setRolloverIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
@@ -710,23 +674,20 @@ public class Sudoku {
 						btnSelection.setEnabled(true);
 						btnSelection = null;
 					}
-						
-					
-					
 				}
 			}		
 		}
-
 	}
 	
+//	Find out which button the user clicks on.  Also pushes the move onto the Undo stack.
 	public class CheckButton implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
+//			Only select a new button if the previous button already has a value.
 			if ((btnSelection == null))
 			{
-				
 				btnSelection = (Button) e.getSource();
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
@@ -738,14 +699,14 @@ public class Sudoku {
 						selectedRow = i/9;
 						selectedColumn = i%9;
 					}
-
-				myStack.push(new Move(""+puzzle[selectedRow][selectedColumn], btnSelection.getLocationValue()));
 				
+//				Pushes the move onto the Undo stack with the location and value.
+				myStack.push(new Move(""+puzzle[selectedRow][selectedColumn], btnSelection.getLocationValue()));
 			}			
-			
 		}
 	}
 	
+//	Read method to load from the files the puzzle being worked on.
 	private int[][] readFile(int choice) throws IOException 
 	{
 		FileReader file;
@@ -774,13 +735,12 @@ public class Sudoku {
 				parts = line[row].split(",");
 				table[row][col] = Integer.parseInt(parts[col]);
 			}		
-			
 		file.close();
 		
 		return (table);
-
 	}
 	
+//	Write the user edited puzzle to a file called "editedPuzzle.txt"
     private void writeUserPuzzle() throws IOException, UnsupportedEncodingException
     {
     	PrintWriter writer = new PrintWriter("editedPuzzle.txt", "UTF-8");
@@ -796,6 +756,7 @@ public class Sudoku {
     	writer.close();
     }
     
+//	Write the user created puzzle to a file called "puzzle.txt"
     private void writePuzzle() throws IOException, UnsupportedEncodingException
     {
     	PrintWriter writer = new PrintWriter("puzzle.txt", "UTF-8");
@@ -806,14 +767,12 @@ public class Sudoku {
     		{
     			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
     		}
-    		
     		writer.println();
     	}
-    		
     	writer.close();
     }
     
-    
+//	Write a blank puzzle to the file "puzzle.txt"
     private void writeBlankPuzzle() throws IOException, UnsupportedEncodingException
     {
     	PrintWriter writer = new PrintWriter("puzzle.txt", "UTF-8");
@@ -825,10 +784,11 @@ public class Sudoku {
     		
     		writer.println();
     	}
-    		
     	writer.close();
     }
     
+    // Sang comments
+    //Prevent player to click on original numbers
     private void checkDisabledLocations() throws IOException
     {
     	FileReader file = new FileReader("puzzle.txt");
@@ -866,6 +826,7 @@ public class Sudoku {
 		reader.close();
     }
     
+    //Check if you option is valid to put in or not.
 	private boolean isValid(int number) {
 
 		//Check row 
@@ -899,6 +860,7 @@ public class Sudoku {
 		return true;
 	}
 	
+	//Check if the player finish playing the puzzle
 	private boolean isDone() {
 		for (int i = 0; i < 9; i++)
 			for (int j = 0; j < 9; j++)
@@ -909,7 +871,7 @@ public class Sudoku {
 		
 	}
 	
-
+	//Congratulation panel appears if the player win
 	private void victoryDance()  {
 		
 		Integer[] victoryNumbers = {10, 12, 15, 19, 21, 23, 25, 28, 30, 32, 34, 38, 41, 42, 43, 47, 50, 52, 56, 59, 61};
@@ -930,6 +892,7 @@ public class Sudoku {
 		puzzleDone = true;
 	}
 	
+	//Check how many empty squares in the puzzle.
 	private int countEmpty() {
 		int counter = 0;
 		for (int i = 0; i < 9; i++)
@@ -939,6 +902,7 @@ public class Sudoku {
 		return counter;
 	}
 	
+	//Upload resources for images and border layout
 	private void loadResources() {
 		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
 				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
@@ -1006,6 +970,7 @@ public class Sudoku {
 			
 	}
 	
+	//Handler for "Undo" button. It returns to the previous choice(image and puzzle).
 	private class Undo implements ActionListener
 	{
 		@Override
@@ -1013,7 +978,7 @@ public class Sudoku {
 		{
 			if (!myStack.isEmpty())
 			{
-				Move temp = myStack.pop();
+				Move temp = myStack.pop();// local variable to save top stack value.
 				
 				for(int i = 0; i < 81; i++)
 				{
@@ -1021,20 +986,22 @@ public class Sudoku {
 					{
 						int row = i / 9;
 						int col = i % 9 ;
-						puzzle[row][col] = Integer.parseInt(temp.getValue());
-						hasErrors = isValid(puzzle[row][col]);
-						System.out.printf("%d\n", Integer.parseInt(temp.getValue()));
+						puzzle[row][col] = Integer.parseInt(temp.getValue());//Change value in the puzzle.
+						hasErrors = isValid(puzzle[row][col]);// Check puzzle again after undo.
+						//Debugging the Undo Handler.
+						//System.out.printf("%d\n", Integer.parseInt(temp.getValue()));
 						btnNumbers[i].setRolloverIcon(buttonRolloverImages[Integer.parseInt(temp.getValue())]);
 						btnNumbers[i].setIcon(buttonImages[Integer.parseInt(temp.getValue())]);
 						btnNumbers[i].setPressedIcon(buttonPressedImages[Integer.parseInt(temp.getValue())]);
 						btnNumbers[i].setText(temp.getValue());
-						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);
+						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);//Change image display of the button.
 					}
 				}
 			}
 		}
 	}
 	
+	//Adding sound for "Generate" and "Solve" buttons.
 	private void playSound(String clipName)
 	{
 		try 
@@ -1047,18 +1014,7 @@ public class Sudoku {
 		catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) 
 		{
 			e.printStackTrace();
+		}
 	}
-}
-
-
-	
-	
-	
-	
 		
-}
-
-
-
-
-
+}// end class Sudoku
