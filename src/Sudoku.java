@@ -647,6 +647,7 @@ public class Sudoku {
 			btnSelection.setPressedIcon(buttonPressedImages[0]);
 			btnSelection.setText("0");
 			puzzle[selectedRow][selectedColumn]=0;
+			hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
 
 								
 			btnSelection.setRolloverEnabled(true);
@@ -1015,8 +1016,10 @@ public class Sudoku {
 				{
 					if (i == temp.getLocation())
 					{
-						puzzle[selectedRow][selectedColumn] = Integer.parseInt(temp.getValue());
-						hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
+						int row = i / 9;
+						int col = i % 9 ;
+						puzzle[row][col] = Integer.parseInt(temp.getValue());
+						hasErrors = isValid(puzzle[row][col]);
 						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);
 					}
 				}
