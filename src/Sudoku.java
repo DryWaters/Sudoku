@@ -725,7 +725,6 @@ public class Sudoku {
 			{
 				btnSelection = (Button) e.getSource();
 				myStack.push(new Move(btnSelection.getText(), btnSelection.getLocationValue()));
-				System.out.println(myStack.peek());
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
 				pnlClear.setVisible(true);
@@ -861,7 +860,7 @@ public class Sudoku {
 
 		//Check row 
 		for (int i = 0; i<9; i++)
-			if (puzzle[i][selectedRow] == number)
+			if (puzzle[selectedRow][i] == number)
 			{
 				hasErrors = true;
 				return false;
@@ -869,17 +868,17 @@ public class Sudoku {
 
 		//Check column
 		for (int i = 0; i<9; i++)
-			if (puzzle[selectedColumn][i] == number)
+			if (puzzle[i][selectedColumn] == number)
 			{
 				hasErrors = true;
 				return false;
 			}
 
 		//Check small block 3x3
-		int tmpX = selectedColumn % 3; 
-		int tmpY = selectedRow % 3;
-		for (int k = selectedColumn - tmpX; k <= selectedColumn - tmpX + 2; k++)
-			for (int t = selectedRow - tmpY; t <= selectedRow - tmpY + 2; t++)
+		int tmpX = selectedRow % 3; 
+		int tmpY = selectedColumn % 3;
+		for (int k = selectedColumn - tmpY; k <= selectedColumn - tmpY + 2; k++)
+			for (int t = selectedRow - tmpX; t <= selectedRow - tmpX + 2; t++)
 				if (puzzle[k][t] == number)
 				{
 					hasErrors = true;
