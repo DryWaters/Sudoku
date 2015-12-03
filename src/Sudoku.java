@@ -197,7 +197,7 @@ public class Sudoku {
 //						Choice 0 = "YES" play puzzle
 //						Choice 1 = "NO" messed up puzzle and want to return
 						int choice = 0;
-						choice = JOptionPane.showConfirmDialog(null,  "There are errors.  Are you sure you want to create this puzzle?", "Errors", JOptionPane.YES_NO_OPTION);
+						choice = JOptionPane.showConfirmDialog(frmMainFrame,  "There are errors.  Are you sure you want to create this puzzle?", "Errors", JOptionPane.YES_NO_OPTION);
 						if (choice == 0)
 						{
 							writePuzzle();
@@ -286,10 +286,10 @@ public class Sudoku {
 //						If the puzzle has users, it lets the user know to fix the problems.
 						if (hasErrors)
 						{
-							JOptionPane.showMessageDialog(null, "Current puzzle has errors.  Please fix before using \"Solve\" button!", "Error", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(frmMainFrame, "Current puzzle has errors.  Please fix before using \"Solve\" button!", "Error", JOptionPane.ERROR_MESSAGE);
 						} 
 						else {
-							JOptionPane.showMessageDialog(null, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);	
+							JOptionPane.showMessageDialog(frmMainFrame, "Too many empty squares to solve!", "Error", JOptionPane.ERROR_MESSAGE);	
 						}
 					}
 
@@ -544,7 +544,7 @@ public class Sudoku {
 		
 		if(tempFile.exists()&&(isNewPuzzle))
 		{
-			choice = JOptionPane.showConfirmDialog(null,  "Would you like to load previous changes?", "Load", JOptionPane.YES_NO_OPTION);
+			choice = JOptionPane.showConfirmDialog(frmMainFrame,  "Would you like to load previous changes?", "Load", JOptionPane.YES_NO_OPTION);
 			puzzle = readFile(choice);
 		}
 		else
@@ -646,7 +646,7 @@ public class Sudoku {
 			btnSelection.setIcon(buttonImages[0]);
 			btnSelection.setPressedIcon(buttonPressedImages[0]);
 			btnSelection.setText("0");
-			puzzle[selectedColumn][selectedRow]=0;
+			puzzle[selectedRow][selectedColumn]=0;
 
 								
 			btnSelection.setRolloverEnabled(true);
@@ -678,7 +678,7 @@ public class Sudoku {
 						btnSelection.setIcon(buttonImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
-						puzzle[selectedColumn][selectedRow]=Integer.parseInt(e.getActionCommand());
+						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
 						if(isDone())
 						{
 							victoryDance();
@@ -701,7 +701,7 @@ public class Sudoku {
 						btnSelection.setIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setPressedIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
-						puzzle[selectedColumn][selectedRow]=Integer.parseInt(e.getActionCommand());
+						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
 						btnSelection.setRolloverEnabled(true);
 						btnSelection.setEnabled(false);
 						btnSelection.setEnabled(true);
@@ -723,8 +723,8 @@ public class Sudoku {
 
 			if ((btnSelection == null))
 			{
+				
 				btnSelection = (Button) e.getSource();
-				System.out.println(btnSelection.getText());
 				myStack.push(new Move(btnSelection.getText(), btnSelection.getLocationValue()));
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
@@ -733,8 +733,8 @@ public class Sudoku {
 				for (int i = 0; i < btnNumbers.length; i++)
 					if (btnSelection==btnNumbers[i])
 					{
-						selectedRow = i%9;
-						selectedColumn = i/9;
+						selectedRow = i/9;
+						selectedColumn = i%9;
 					}
 				
 			}			
@@ -1015,7 +1015,6 @@ public class Sudoku {
 				{
 					if (i == temp.getLocation())
 					{
-						System.out.printf("%s", temp.getValue());
 						puzzle[selectedRow][selectedColumn] = Integer.parseInt(temp.getValue());
 						hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
 						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);
