@@ -726,7 +726,6 @@ public class Sudoku {
 			{
 				
 				btnSelection = (Button) e.getSource();
-				myStack.push(new Move(btnSelection.getText(), btnSelection.getLocationValue()));
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
 				pnlClear.setVisible(true);
@@ -737,6 +736,8 @@ public class Sudoku {
 						selectedRow = i/9;
 						selectedColumn = i%9;
 					}
+
+				myStack.push(new Move(""+puzzle[selectedRow][selectedColumn], btnSelection.getLocationValue()));
 				
 			}			
 			
@@ -1020,6 +1021,11 @@ public class Sudoku {
 						int col = i % 9 ;
 						puzzle[row][col] = Integer.parseInt(temp.getValue());
 						hasErrors = isValid(puzzle[row][col]);
+						System.out.printf("%d\n", Integer.parseInt(temp.getValue()));
+						btnNumbers[i].setRolloverIcon(buttonRolloverImages[Integer.parseInt(temp.getValue())]);
+						btnNumbers[i].setIcon(buttonImages[Integer.parseInt(temp.getValue())]);
+						btnNumbers[i].setPressedIcon(buttonPressedImages[Integer.parseInt(temp.getValue())]);
+						btnNumbers[i].setText(temp.getValue());
 						setButton(btnNumbers[i], Integer.parseInt(temp.getValue()), i);
 					}
 				}
