@@ -112,7 +112,7 @@ public class SudokuSolver
 	public static boolean isOK(int i, int j, int x, int[][] table)
 	{
 		int k, t;
-		int tmpX, tmpY; //Current position of row and col
+		int tmpX, tmpY; //Current position of row and column
 
 		//Check row i.
 		for (k = 0; k<N; k++)
