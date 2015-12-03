@@ -40,9 +40,9 @@ public class Sudoku {
 	private JPanel pnlCreateButtonNavigation;
 	private JPanel pnlClear;
 	
-	private JButton[] btnNumberSelectors = new JButton[9];
-	private JButton[] btnNumbers = new JButton[81];
-	private JButton btnSelection;	
+	private Button[] btnNumberSelectors = new Button[9];
+	private Button[] btnNumbers = new Button[81];
+	private Button btnSelection;	
 	
 	private ImageIcon[] buttonImages = new ImageIcon[10];
 	private ImageIcon[] buttonRolloverImages = new ImageIcon[10];
@@ -66,6 +66,7 @@ public class Sudoku {
 	
 	private Generator puzzleGenerator;
 	private SudokuSolver sudokuSolver;
+	private StackInterface<Move> myStack;
 		
 //	Main just creates frame and sets it to visible
 	public static void main(String[] args) {
@@ -154,8 +155,13 @@ public class Sudoku {
 		JButton btnGenerate = new JButton ("Generate");
 		btnGenerate.setBounds(75, 250, 100, 50);
 		
+		JButton btnUndo = new JButton("Undo");
+		btnUndo.setBounds(75, 350, 100, 50);
+		btnUndo.addActionListener(new Undo());
+		
 		pnlCreateButtonNavigation.add(btnGoBack);
 		pnlCreateButtonNavigation.add(btnGenerate);		
+		pnlCreateButtonNavigation.add(btnUndo);
 		
 //		Actions for Generate Puzzle:  Creates a new Generator object and runs the method to write a random puzzle to puzzle.txt,
 //		removes the previous puzzle panel from the frame, and then creates a new panel with the new file, also automatically 
@@ -240,6 +246,10 @@ public class Sudoku {
 		pnlButtonNavigation.setLayout(null);
 		pnlButtonNavigation.setBounds(0, 0, 200, 600);
 		
+		JButton btnUndo = new JButton("Undo");
+		btnUndo.setBounds(75, 350, 100, 50);
+		btnUndo.addActionListener(new Undo());
+		
 		JButton btnGoBack = new JButton("Main");
 		btnGoBack.setBounds(75, 150, 100, 50);
 		
@@ -248,6 +258,7 @@ public class Sudoku {
 			
 		pnlButtonNavigation.add(btnGoBack);
 		pnlButtonNavigation.add(btnSolve);
+		pnlButtonNavigation.add(btnUndo);
 
 		
 //		Actions for Solve Puzzle:  Creates a new Solver object and runs the method (findLastK) to know when to stop the recursion
@@ -331,13 +342,13 @@ public class Sudoku {
 //		Use return image icon for the button to return to main menu
 		JButton btnReturn = new JButton("Return");
 		ImageIcon returnImage = new ImageIcon("./resources/Return.png");
-		btnReturn.setBounds(410, 500, 60, 60);
+		btnReturn.setBounds(410, 470, 60, 60);
 		btnReturn.setIcon(returnImage);
 		
 		String infoText = "<html><center><h1>Coding</h1><h3>Sang Tan Le</h3><h1>GUI</h1><h3>Daniel Waters</h3>"
 				+ "<h1>Music</h1><h3>longzijun<br>https://longzijun.wordpress.com/</center></html>";
 		JTextPane txtCredits = new JTextPane();
-		txtCredits.setBounds(90, 150, 700, 350);
+		txtCredits.setBounds(90, 120, 700, 340);
 		txtCredits.setContentType("text/html");
 		txtCredits.setText(infoText);
 					
@@ -375,7 +386,7 @@ public class Sudoku {
 //		Also assigns an ActionListener class "CheckSelection()" to each button.
 		for (int i = 0; i < btnLabels.length; i++)
 		{
-			btnNumberSelectors[i] = new JButton(btnLabels[i]);
+			btnNumberSelectors[i] = new Button(btnLabels[i]);
 			btnNumberSelectors[i].addActionListener(new CheckSelection());
 			setButton(btnNumberSelectors[i], i + 1);
 			pnlNumberSelector.add(btnNumberSelectors[i]);
@@ -553,6 +564,7 @@ public class Sudoku {
 		pnlPuzzle.setBounds(230, 100, 400, 400);
 		
 		String temp = "";
+		myStack = new LinkedStack<Move>();
 		
 		int counter = 0;
 		
@@ -561,7 +573,7 @@ public class Sudoku {
 			
 			for(int j = 0; j < 9; j++)
 			{
-				btnNumbers[counter] = new JButton(temp+puzzle[i][j]);
+				btnNumbers[counter] = new Button(temp+puzzle[i][j], counter);
 				btnNumbers[counter].addActionListener(new CheckButton());
 				if (disabledLocations[counter]!=1)
 				{
@@ -634,7 +646,7 @@ public class Sudoku {
 			btnSelection.setIcon(buttonImages[0]);
 			btnSelection.setPressedIcon(buttonPressedImages[0]);
 			btnSelection.setText("0");
-			puzzle[selectedRow][selectedColumn]=0;
+			puzzle[selectedColumn][selectedRow]=0;
 
 								
 			btnSelection.setRolloverEnabled(true);
@@ -660,13 +672,13 @@ public class Sudoku {
 					pnlNumberSelector.setVisible(false);
 					pnlClear.setVisible(false);
 					
-					if (isValid(Integer.parseInt(e.getActionCommand()), selectedRow, selectedColumn))
+					if (isValid(Integer.parseInt(e.getActionCommand())))
 					{
 						btnSelection.setRolloverIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setIcon(buttonImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setPressedIcon(buttonPressedImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
-						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+						puzzle[selectedColumn][selectedRow]=Integer.parseInt(e.getActionCommand());
 						if(isDone())
 						{
 							victoryDance();
@@ -689,7 +701,7 @@ public class Sudoku {
 						btnSelection.setIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setPressedIcon(buttonErrorImages[Integer.parseInt(e.getActionCommand())]);
 						btnSelection.setText(e.getActionCommand());
-						puzzle[selectedRow][selectedColumn]=Integer.parseInt(e.getActionCommand());
+						puzzle[selectedColumn][selectedRow]=Integer.parseInt(e.getActionCommand());
 						btnSelection.setRolloverEnabled(true);
 						btnSelection.setEnabled(false);
 						btnSelection.setEnabled(true);
@@ -711,7 +723,9 @@ public class Sudoku {
 
 			if ((btnSelection == null))
 			{
-				btnSelection = (JButton) e.getSource();
+				btnSelection = (Button) e.getSource();
+				myStack.push(new Move(btnSelection.getText(), btnSelection.getLocationValue()));
+				System.out.println(myStack.peek());
 				btnSelection.setIcon(buttonRolloverImages[Integer.parseInt(e.getActionCommand())]);
 				pnlNumberSelector.setVisible(true);
 				pnlClear.setVisible(true);
@@ -719,8 +733,8 @@ public class Sudoku {
 				for (int i = 0; i < btnNumbers.length; i++)
 					if (btnSelection==btnNumbers[i])
 					{
-						selectedRow = i/9;
 						selectedColumn = i%9;
+						selectedRow = i/9;
 					}
 				
 			}			
@@ -843,11 +857,11 @@ public class Sudoku {
 		reader.close();
     }
     
-	private boolean isValid(int number, int row, int column) {
+	private boolean isValid(int number) {
 
 		//Check row 
 		for (int i = 0; i<9; i++)
-			if (puzzle[i][column] == number)
+			if (puzzle[i][selectedRow] == number)
 			{
 				hasErrors = true;
 				return false;
@@ -855,17 +869,17 @@ public class Sudoku {
 
 		//Check column
 		for (int i = 0; i<9; i++)
-			if (puzzle[row][i] == number)
+			if (puzzle[selectedColumn][i] == number)
 			{
 				hasErrors = true;
 				return false;
 			}
 
 		//Check small block 3x3
-		int tmpX = row % 3; 
-		int tmpY = column % 3;
-		for (int k = row - tmpX; k <= row - tmpX + 2; k++)
-			for (int t = column - tmpY; t <= column - tmpY + 2; t++)
+		int tmpX = selectedColumn % 3; 
+		int tmpY = selectedRow % 3;
+		for (int k = selectedColumn - tmpX; k <= selectedColumn - tmpX + 2; k++)
+			for (int t = selectedRow - tmpY; t <= selectedRow - tmpY + 2; t++)
 				if (puzzle[k][t] == number)
 				{
 					hasErrors = true;
@@ -981,6 +995,30 @@ public class Sudoku {
 			selectionBorders[i] = new String(selectionBorderMeasurements[i]);
 		
 			
+	}
+	
+	private class Undo implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			if (!myStack.isEmpty())
+			{
+				Move temp = myStack.pop();
+				int location = temp.getLocation();
+
+				for(int i = 0; i < 81; i++)
+				{
+					int test = btnNumbers[i].getLocationValue();
+					if ( test == location)
+					{
+						puzzle[selectedColumn][selectedRow] = Integer.parseInt(temp.getValue());
+						hasErrors = isValid(puzzle[selectedColumn][selectedRow]);
+						setButton(btnNumbers[location], Integer.parseInt(temp.getValue()), location);
+					}
+				}
+			}
+		}
 	}
 		
 }
