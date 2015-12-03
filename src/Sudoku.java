@@ -176,6 +176,7 @@ public class Sudoku {
 					frmMainFrame.remove(pnlPuzzle);
 					pnlPuzzle = createPuzzle();
 					frmMainFrame.add(pnlPuzzle);
+					playSound("loadPuzzle");
 					pnlPuzzle.revalidate();
 					hasErrors = false;
 				} catch (IOException e1) {
@@ -279,6 +280,7 @@ public class Sudoku {
 						frmMainFrame.remove(pnlPuzzle);
 						pnlPuzzle = createPuzzle();
 						frmMainFrame.add(pnlPuzzle);
+						playSound("solvedPuzzle");
 						frmMainFrame.revalidate();
 					}
 					else
@@ -1032,6 +1034,27 @@ public class Sudoku {
 			}
 		}
 	}
+	
+	private void playSound(String clipName)
+	{
+		try 
+		{
+			AudioInputStream soundToPlay = AudioSystem.getAudioInputStream(new File("./resources/"+clipName+".wav"));
+			Clip clipToPlay = AudioSystem.getClip( );
+			clipToPlay.open(soundToPlay);
+			clipToPlay.start();
+		} 
+		catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) 
+		{
+			e.printStackTrace();
+	}
+}
+
+
+	
+	
+	
+	
 		
 }
 
