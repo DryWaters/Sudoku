@@ -732,8 +732,8 @@ public class Sudoku {
 				for (int i = 0; i < btnNumbers.length; i++)
 					if (btnSelection==btnNumbers[i])
 					{
-						selectedColumn = i%9;
-						selectedRow = i/9;
+						selectedRow = i%9;
+						selectedColumn = i/9;
 					}
 				
 			}			
@@ -784,7 +784,8 @@ public class Sudoku {
     	{
     		for(int col = 0; col<9; ++col)
     			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
-    			writer.println();	
+    	
+    		writer.println();
     	}
     		
     	writer.close();
@@ -797,8 +798,11 @@ public class Sudoku {
     	for(int row = 0; row<9; ++row)
     	{
     		for(int col = 0; col<9; ++col)
+    		{
     			writer.print( (col == 8 ? puzzle[row][col] : puzzle[row][col] + ",") );
-    			writer.println();	
+    		}
+    		
+    		writer.println();
     	}
     		
     	writer.close();
@@ -813,7 +817,8 @@ public class Sudoku {
     	{
     		for(int col = 0; col<9; ++col)
     			writer.print( (col == 8 ? blankPuzzle[row][col] : blankPuzzle[row][col] + ",") );
-    			writer.println();	
+    		
+    		writer.println();
     	}
     		
     	writer.close();
@@ -875,10 +880,10 @@ public class Sudoku {
 			}
 
 		//Check small block 3x3
-		int tmpX = selectedRow % 3; 
-		int tmpY = selectedColumn % 3;
-		for (int k = selectedColumn - tmpY; k <= selectedColumn - tmpY + 2; k++)
-			for (int t = selectedRow - tmpX; t <= selectedRow - tmpX + 2; t++)
+		int tmpX = selectedColumn % 3; 
+		int tmpY = selectedRow % 3;
+		for (int k = selectedColumn - tmpX; k <= selectedColumn - tmpX + 2; k++)
+			for (int t = selectedRow - tmpY; t <= selectedRow - tmpY + 2; t++)
 				if (puzzle[k][t] == number)
 				{
 					hasErrors = true;
@@ -1011,8 +1016,8 @@ public class Sudoku {
 					int test = btnNumbers[i].getLocationValue();
 					if ( test == location)
 					{
-						puzzle[selectedColumn][selectedRow] = Integer.parseInt(temp.getValue());
-						hasErrors = isValid(puzzle[selectedColumn][selectedRow]);
+						puzzle[selectedRow][selectedColumn] = Integer.parseInt(temp.getValue());
+						hasErrors = isValid(puzzle[selectedRow][selectedColumn]);
 						setButton(btnNumbers[location], Integer.parseInt(temp.getValue()), location);
 					}
 				}
