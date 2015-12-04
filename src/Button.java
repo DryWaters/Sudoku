@@ -1,6 +1,10 @@
 import javax.swing.JButton;
 
 public class Button extends JButton{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int location;
 	
 	public Button(String text, int location)

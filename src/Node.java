@@ -1,7 +1,9 @@
 public class Node<T> {
 	private T data;
+	@SuppressWarnings("rawtypes")
 	private Node next;
 	
+	@SuppressWarnings("rawtypes")
 	public Node(T data, Node next)
 	{
 		this.data = data;
@@ -13,11 +15,13 @@ public class Node<T> {
 		this(data, null);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void setNext(Node node)
 	{
 		next = node;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public Node getNext()
 	{
 		return next;

@@ -1,4 +1,5 @@
 public class LinkedStack<T> implements StackInterface<T> {
+	@SuppressWarnings("rawtypes")
 	private Node topNode; // references the first node in the chain
 	
 	public LinkedStack()
@@ -6,6 +7,7 @@ public class LinkedStack<T> implements StackInterface<T> {
 		topNode = null;
 	} // end default constructor
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void push(T newEntry)
 	{
@@ -23,6 +25,7 @@ public class LinkedStack<T> implements StackInterface<T> {
 		return top;
 	} // end pop
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T peek() 
 	{
