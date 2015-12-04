@@ -634,6 +634,7 @@ public class Sudoku {
 				{
 					pnlNumberSelector.setVisible(false);
 					pnlClear.setVisible(false);
+					puzzle[selectedRow][selectedColumn] = 0;
 					
 //					If the user chooses a valid selection, then change the images to valid images.
 					if (isValid(Integer.parseInt(e.getActionCommand())))
@@ -845,10 +846,10 @@ public class Sudoku {
 			}
 
 		//Check small block 3x3
-		int tmpX = selectedColumn % 3; 
-		int tmpY = selectedRow % 3;
-		for (int k = selectedColumn - tmpX; k <= selectedColumn - tmpX + 2; k++)
-			for (int t = selectedRow - tmpY; t <= selectedRow - tmpY + 2; t++)
+		int tmpX = selectedRow % 3; 
+		int tmpY = selectedColumn % 3;
+		for (int k = selectedRow - tmpX; k <= selectedRow - tmpX + 2; k++)
+			for (int t = selectedColumn - tmpY; t <= selectedColumn - tmpY + 2; t++)
 				if (puzzle[k][t] == number)
 				{
 					hasErrors = true;
@@ -987,8 +988,6 @@ public class Sudoku {
 						int col = i % 9 ;
 						puzzle[row][col] = Integer.parseInt(temp.getValue());//Change value in the puzzle.
 						hasErrors = isValid(puzzle[row][col]);// Check puzzle again after undo.
-						//Debugging the Undo Handler.
-						//System.out.printf("%d\n", Integer.parseInt(temp.getValue()));
 						btnNumbers[i].setRolloverIcon(buttonRolloverImages[Integer.parseInt(temp.getValue())]);
 						btnNumbers[i].setIcon(buttonImages[Integer.parseInt(temp.getValue())]);
 						btnNumbers[i].setPressedIcon(buttonPressedImages[Integer.parseInt(temp.getValue())]);
