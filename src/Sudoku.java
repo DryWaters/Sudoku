@@ -2,18 +2,16 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -92,8 +90,7 @@ public class Sudoku {
 			frmMainFrame.setBounds(100, 100, 900, 600);
 			frmMainFrame.setLayout(null);
 			frmMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			BufferedImage backgroundImage = ImageIO.read(new File("./resources/BackgroundSmallLogo.png"));
-			frmMainFrame.setContentPane(new JLabel(new ImageIcon(backgroundImage)));
+			frmMainFrame.setContentPane(new JLabel(new ImageIcon(getClass().getResource("/resources/BackgroundSmallLogo.png"))));
 			pnlMain = createMainMenu();
 			pnlMain.setVisible(true);
 		} catch (IOException | UnsupportedAudioFileException e) {
@@ -356,7 +353,7 @@ public class Sudoku {
 		txtCredits.setText(infoText);
 					
 //		Use a JLabel to cover the entire panel with a background image.
-		ImageIcon smallBackgroundIcon = new ImageIcon("./resources/BackgroundSmallLogo.png");
+		ImageIcon smallBackgroundIcon = new ImageIcon(getClass().getResource("/resources/BackgroundSmallLogo.png"));
 		JLabel background = new JLabel();
 		background.setIcon(smallBackgroundIcon);
 		background.setBounds(0, 0, 900, 600);
@@ -402,8 +399,10 @@ public class Sudoku {
 	private JPanel createMainMenu() throws UnsupportedAudioFileException 
 	{
 //		Play the background music
-        try {
-        	AudioInputStream audioBackgroundStream = AudioSystem.getAudioInputStream(new File("./resources/backgroundMusic.wav"));			
+       try {
+    	   	   
+         	InputStream backgroundMusic = getClass().getResourceAsStream("resources/BackgroundMusic.wav");
+			AudioInputStream audioBackgroundStream = AudioSystem.getAudioInputStream(new BufferedInputStream(backgroundMusic));
     		Clip clipBackgroundMusic = AudioSystem.getClip( );
 			clipBackgroundMusic.open(audioBackgroundStream);
 	        clipBackgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
@@ -412,9 +411,9 @@ public class Sudoku {
 			e.printStackTrace();
 		}
 		
-		ImageIcon backgroundIcon = new ImageIcon("./resources/MainBackground.png");
+		ImageIcon backgroundIcon = new ImageIcon(getClass().getResource("/resources/MainBackground.png"));
 		JLabel background = new JLabel();
-		ImageIcon infoImage = new ImageIcon("./resources/Info.png");
+		ImageIcon infoImage = new ImageIcon(getClass().getResource("/resources/Info.png"));
 		
 		background.setIcon(backgroundIcon);
 		background.setBounds(0, 0, 900, 600);
@@ -506,7 +505,9 @@ public class Sudoku {
 			}
 		});	
 		
-		return pnlMain;		
+		return pnlMain;
+        
+	
 	}
 	
 //	Check if user has already started on a puzzle.  If it exits then prompt the user if they want to load it.
@@ -903,36 +904,42 @@ public class Sudoku {
 	}
 	
 	//Upload resources for images and border layout
-	private void loadResources() {
-		final String[] buttonImageList = {"./resources/Button0.png", "./resources/Button1.png", "./resources/Button2.png", 
-				"./resources/Button3.png", "./resources/Button4.png", "./resources/Button5.png", "./resources/Button6.png",
-				 "./resources/Button7.png", "./resources/Button8.png", "./resources/Button9.png"};
+	private void loadResources() throws IOException {
+		
+		final String[] buttonImageList = {"resources/Button0.png", "resources/Button1.png", "resources/Button2.png", 
+				"resources/Button3.png", "resources/Button4.png", "resources/Button5.png", "resources/Button6.png",
+				"resources/Button7.png", "resources/Button8.png", "resources/Button9.png"};
 		for (int i = 0; i < buttonImageList.length; i++)
-			buttonImages[i] = new ImageIcon(buttonImageList[i]);
+			buttonImages[i] = new ImageIcon(getClass().getResource(buttonImageList[i]));
 		
-		final String[] buttonRolloverImageList = {"./resources/Button0Rollover.png", "./resources/Button1Rollover.png", "./resources/Button2Rollover.png", "./resources/Button3Rollover.png",
-				"./resources/Button4Rollover.png", "./resources/Button5Rollover.png", "./resources/Button6Rollover.png", "./resources/Button7Rollover.png",
-				"./resources/Button8Rollover.png", "./resources/Button9Rollover.png"};
+		
+		final String[] buttonRolloverImageList = {"resources/Button0Rollover.png", "resources/Button1Rollover.png", 
+				"resources/Button2Rollover.png", "resources/Button3Rollover.png", "resources/Button4Rollover.png", 
+				"resources/Button5Rollover.png", "resources/Button6Rollover.png", "resources/Button7Rollover.png",
+				"resources/Button8Rollover.png", "resources/Button9Rollover.png"};
 		for (int i = 0; i < buttonRolloverImageList.length; i++)
-			buttonRolloverImages[i] = new ImageIcon(buttonRolloverImageList[i]);
+			buttonRolloverImages[i] = new ImageIcon(getClass().getResource(buttonRolloverImageList[i]));
 		
-		final String[] buttonPressedImageList = {"./resources/Button0Pressed.png", "./resources/Button1Pressed.png", "./resources/Button2Pressed.png", "./resources/Button3Pressed.png",
-				"./resources/Button4Pressed.png", "./resources/Button5Pressed.png", "./resources/Button6Pressed.png", "./resources/Button7Pressed.png",
-				"./resources/Button8Pressed.png", "./resources/Button9Pressed.png"};
+		final String[] buttonPressedImageList = {"resources/Button0Pressed.png", "resources/Button1Pressed.png", 
+				"resources/Button2Pressed.png", "resources/Button3Pressed.png", "resources/Button4Pressed.png",
+				"resources/Button5Pressed.png", "resources/Button6Pressed.png", "resources/Button7Pressed.png",
+				"resources/Button8Pressed.png", "resources/Button9Pressed.png"};
 		for (int i = 0; i < buttonPressedImageList.length; i++)
-			buttonPressedImages[i] = new ImageIcon(buttonPressedImageList[i]);
+			buttonPressedImages[i] = new ImageIcon(getClass().getResource(buttonPressedImageList[i]));
 			
-		final String[] buttonDisabledImageList = {"./resources/Button1Disabled.png", "./resources/Button1Disabled.png", "./resources/Button2Disabled.png", "./resources/Button3Disabled.png",
-					"./resources/Button4Disabled.png", "./resources/Button5Disabled.png", "./resources/Button6Disabled.png", "./resources/Button7Disabled.png",
-					"./resources/Button8Disabled.png", "./resources/Button9Disabled.png"};
+		final String[] buttonDisabledImageList = {"resources/Button1Disabled.png", "resources/Button1Disabled.png", 
+				"resources/Button2Disabled.png", "resources/Button3Disabled.png", "resources/Button4Disabled.png", 
+				"resources/Button5Disabled.png", "resources/Button6Disabled.png", "resources/Button7Disabled.png",
+				"resources/Button8Disabled.png", "resources/Button9Disabled.png"};
 		for (int i = 0; i < buttonPressedImageList.length; i++)
-				buttonDisabledImages[i] = new ImageIcon(buttonDisabledImageList[i]);
+				buttonDisabledImages[i] = new ImageIcon(getClass().getResource(buttonDisabledImageList[i]));
 				
-		final String[] buttonErrorImageList = {"./resources/Button0Error.png", "./resources/Button1Error.png", "./resources/Button2Error.png", "./resources/Button3Error.png",
-				"./resources/Button4Error.png", "./resources/Button5Error.png", "./resources/Button6Error.png", "./resources/Button7Error.png",
-				"./resources/Button8Error.png", "./resources/Button9Error.png"};
+		final String[] buttonErrorImageList = {"resources/Button0Error.png", "resources/Button1Error.png", 
+				"resources/Button2Error.png", "resources/Button3Error.png", "resources/Button4Error.png", 
+				"resources/Button5Error.png", "resources/Button6Error.png", "resources/Button7Error.png",
+				"resources/Button8Error.png", "resources/Button9Error.png"};
 			for (int i = 0; i < buttonErrorImageList.length; i++)
-				buttonErrorImages[i] = new ImageIcon(buttonErrorImageList[i]);
+				buttonErrorImages[i] = new ImageIcon(getClass().getResource(buttonErrorImageList[i]));
 			
 		final String[] puzzleBorderMeasurements = 
 			{"3,3,1,1", "3,1,1,1", "3,1,1,3", "3,3,1,1", "3,1,1,1", 
@@ -1004,15 +1011,18 @@ public class Sudoku {
 	{
 		try 
 		{
-			AudioInputStream soundToPlay = AudioSystem.getAudioInputStream(new File("./resources/"+clipName+".wav"));
+			InputStream sound = getClass().getResourceAsStream("resources/"+clipName+".wav");
+			AudioInputStream audioSoundStream = AudioSystem.getAudioInputStream(new BufferedInputStream(sound));
 			Clip clipToPlay = AudioSystem.getClip( );
-			clipToPlay.open(soundToPlay);
+			clipToPlay.open(audioSoundStream);
 			clipToPlay.start();
 		} 
 		catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) 
 		{
 			e.printStackTrace();
 		}
+		
+		
 	}
 		
 }// end class Sudoku
