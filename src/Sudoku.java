@@ -341,7 +341,7 @@ public class Sudoku {
 
 //		Use return image icon for the button to return to main menu
 		JButton btnReturn = new JButton("Return");
-		ImageIcon returnImage = new ImageIcon("./resources/Return.png");
+		ImageIcon returnImage = new ImageIcon(getClass().getResource("/resources/Return.png"));
 		btnReturn.setBounds(410, 470, 60, 60);
 		btnReturn.setIcon(returnImage);
 		
